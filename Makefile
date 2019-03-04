@@ -268,9 +268,10 @@ ZSRCBALL := rpmbuild/SOURCES/$(ZTARBALL)
 
 BUILDID	:= .local
 dist	:= $(word 2,$(shell grep -r "^%dist" /etc/rpm /usr/lib/rpm))
-release	:= $(word 2,$(shell grep ^Release: $(SPECFILE)))
-release	:= $(subst %{?dist},$(dist),$(release))
-release	:= $(subst %{?buildid},$(BUILDID),$(release))
+release3:= $(word 2,$(shell grep ^Release: $(SPECFILE)))
+release2:= $(subst %{?dist},$(dist),$(release3))
+release1:= $(subst %{?buildid},$(BUILDID),$(release2))
+release	:= $(subst %{?distprefix},,$(release1))
 rpmver	:= $(VERSION)-$(release)
 SRPM	:= rpmbuild/SRPMS/keyutils-$(rpmver).src.rpm
 
