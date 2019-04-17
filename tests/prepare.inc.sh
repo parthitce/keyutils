@@ -96,7 +96,10 @@ fi
 # Work out whether Diffie-Hellman is supported by the kernel
 #
 have_dh_compute=0
-if keyutils_at_or_later_than 1.5.10 && kernel_at_or_later_than 4.7-rc1
+if [ $OSDIST = RHEL ]
+then
+    :
+elif keyutils_at_or_later_than 1.5.10 && kernel_at_or_later_than 4.7-rc1
 then
     have_dh_compute=1
 fi
