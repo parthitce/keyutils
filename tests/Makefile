@@ -1,4 +1,4 @@
-# Copyright (c) 2006 Red Hat, Inc. All rights reserved. This copyrighted material 
+# Copyright (c) 2015 Red Hat, Inc. All rights reserved. This copyrighted material
 # is made available to anyone wishing to use, modify, copy, or
 # redistribute it subject to the terms and conditions of the GNU General
 # Public License v.2.
@@ -66,6 +66,7 @@ $(METADATA): Makefile
 	@echo "TestTime:     30m" >> $(METADATA)
 	@echo "RunFor:       $(PACKAGE_NAME)" >> $(METADATA)
 	@echo "Requires:     $(PACKAGE_NAME)" >> $(METADATA)
+	@echo "Requires:     redhat-lsb-core" >> $(METADATA)
 	@echo "Releases:     -RHEL2.1 -RHEL3" >> $(METADATA)
 	@echo "Type:         Tier1" >> $(METADATA)
 	@echo "Type:         KernelTier1" >> $(METADATA)
