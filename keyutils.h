@@ -106,6 +106,7 @@ typedef uint32_t key_perm_t;
 #define KEYCTL_PKEY_SIGN		27	/* Create a public key signature */
 #define KEYCTL_PKEY_VERIFY		28	/* Verify a public key signature */
 #define KEYCTL_RESTRICT_KEYRING		29	/* Restrict keys allowed to link to a keyring */
+#define KEYCTL_MOVE			30	/* Move keys between keyrings */
 
 /* keyctl structures */
 struct keyctl_dh_params {
@@ -145,6 +146,8 @@ struct keyctl_pkey_params {
 	};
 	unsigned int	__spare[7];
 };
+
+#define KEYCTL_MOVE_EXCL	0x00000001 /* Do not displace from the to-keyring */
 
 /*
  * syscall wrappers
@@ -227,6 +230,10 @@ extern long keyctl_pkey_verify(key_serial_t key_id,
 			       const char *info,
 			       const void *data, size_t data_len,
 			       const void *sig, size_t sig_len);
+extern long keyctl_move(key_serial_t id,
+			key_serial_t from_ringid,
+			key_serial_t to_ringid,
+			unsigned int flags);
 
 /*
  * utilities

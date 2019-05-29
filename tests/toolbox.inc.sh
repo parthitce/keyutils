@@ -1181,6 +1181,28 @@ function dh_compute_kdf_oi ()
 
 ###############################################################################
 #
+# Move a key between keyrings
+#
+###############################################################################
+function move_key ()
+{
+    my_exitval=0
+    if [ "x$1" = "x--fail" ]
+    then
+	my_exitval=1
+	shift
+    fi
+
+    echo keyctl move $* >>$OUTPUTFILE
+    keyctl move $* >>$OUTPUTFILE 2>&1
+    if [ $? != $my_exitval ]
+    then
+	failed
+    fi
+}
+
+###############################################################################
+#
 # Make sure we sleep at least N seconds
 #
 ###############################################################################

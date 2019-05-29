@@ -39,6 +39,8 @@ keyctl \- key management facility control
 .br
 \fBkeyctl\fR unlink <key> [<keyring>]
 .br
+\fBkeyctl\fR move [-f] <key> <from_keyring> <to_keyring>
+.br
 \fBkeyctl\fR search <keyring> <type> <desc> [<dest_keyring>]
 .br
 \fBkeyctl\fR restrict_keyring <keyring> [<type> [<restriction>]]
@@ -342,6 +344,23 @@ unlinks before exiting.
 .RS
 .nf
 $ keyctl unlink 23 27
+.fi
+.RE
+.SS Move a key between keyrings.
+\fBkeyctl move\fR  [-f] <key> <from_keyring> <to_keyring>
+
+This command moves a key from one keyring to another, atomically combining
+"keyctl unlink <key> <from_keyring>" and "keyctl link <key> <to_keyring>".
+
+If the "-f" flag is present, any matching key will be displaced from
+"to_keyring"; if not present, the command will fail with the error message
+"File exists" if the key would otherwise displace another key from
+"to_keyring".
+
+.RS
+.nf
+$ keyctl move 23 27 29
+$ keyctl move -f 71 @u @s
 .fi
 .RE
 .SS Search a keyring

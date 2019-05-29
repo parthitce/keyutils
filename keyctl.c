@@ -78,6 +78,7 @@ static nr void act_keyctl_pkey_encrypt(int argc, char *argv[]);
 static nr void act_keyctl_pkey_decrypt(int argc, char *argv[]);
 static nr void act_keyctl_pkey_sign(int argc, char *argv[]);
 static nr void act_keyctl_pkey_verify(int argc, char *argv[]);
+static nr void act_keyctl_move(int argc, char *argv[]);
 
 const struct command commands[] = {
 	{ act_keyctl___version,	"--version",	"" },
@@ -94,6 +95,7 @@ const struct command commands[] = {
 	{ act_keyctl_get_persistent, "get_persistent", "<keyring> [<uid>]" },
 	{ act_keyctl_link,	"link",		"<key> <keyring>" },
 	{ act_keyctl_list,	"list",		"<keyring>" },
+	{ act_keyctl_move,	"move",		"[-f] <key> <from_keyring> <to_keyring>" },
 	{ act_keyctl_negate,	"negate",	"<key> <timeout> <keyring>" },
 	{ act_keyctl_new_session, "new_session",	"" },
 	{ act_keyctl_newring,	"newring",	"<name> <keyring>" },
@@ -2064,6 +2066,35 @@ static void act_keyctl_pkey_verify(int argc, char *argv[])
 	if (keyctl_pkey_verify(key, info,
 			       data, data_len, sig, sig_len) < 0)
 		error("keyctl_pkey_verify");
+	exit(0);
+}
+
+/*
+ * Move a key between keyrings.
+ */
+static void act_keyctl_move(int argc, char *argv[])
+{
+	key_serial_t key, from_keyring, to_keyring;
+	unsigned int flags = KEYCTL_MOVE_EXCL;
+
+	if (argc > 4) {
+		if (strcmp("-f", argv[1]) == 0) {
+			flags &= ~KEYCTL_MOVE_EXCL;
+			argc--;
+			argv++;
+		}
+	}
+
+	if (argc != 4)
+		format();
+
+	key = get_key_id(argv[1]);
+	from_keyring = get_key_id(argv[2]);
+	to_keyring = get_key_id(argv[3]);
+
+	if (keyctl_move(key, from_keyring, to_keyring, flags) < 0)
+		error("keyctl_move");
+
 	exit(0);
 }
 

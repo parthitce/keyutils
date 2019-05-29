@@ -91,3 +91,9 @@ KEYUTILS_1.8 {
 	keyctl_pkey_verify;
 
 } KEYUTILS_1.7;
+
+KEYUTILS_1.9 {
+	/* Management functions */
+	keyctl_move;
+
+} KEYUTILS_1.8;

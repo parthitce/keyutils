@@ -327,6 +327,14 @@ long keyctl_pkey_verify(key_serial_t key_id,
 	return keyctl(KEYCTL_PKEY_VERIFY, &params, info, data, sig);
 }
 
+long keyctl_move(key_serial_t id,
+		 key_serial_t from_ringid,
+		 key_serial_t to_ringid,
+		 unsigned int flags)
+{
+	return keyctl(KEYCTL_MOVE, id, from_ringid, to_ringid, flags);
+}
+
 /*****************************************************************************/
 /*
  * fetch key description into an allocated buffer

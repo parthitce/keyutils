@@ -1,8 +1,8 @@
 %define vermajor 1
-%define verminor 6
+%define verminor 6.1
 %define version %{vermajor}.%{verminor}
 %define libapivermajor 1
-%define libapiversion %{libapivermajor}.8
+%define libapiversion %{libapivermajor}.9
 
 # % define buildid .local
 
@@ -99,6 +99,9 @@ make \
 %{_libdir}/pkgconfig/libkeyutils.pc
 
 %changelog
+* Wed May 29 2019 David Howells <dhowells@redhat.com> - 1.6.1-1
+- Add support for keyctl_move().
+
 * Tue Nov 13 2018 David Howells <dhowells@redhat.com> - 1.6-1
 - Apply various specfile cleanups from Fedora.
 - request-key: Provide a command line option to suppress helper execution.
