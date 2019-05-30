@@ -70,47 +70,53 @@ then
     esac
 fi
 
-#
-# Work out whether key invalidation is supported by the kernel
-#
 have_key_invalidate=0
-if keyutils_at_or_later_than 1.5.6 && kernel_at_or_later_than 3.5-rc1
-then
-    have_key_invalidate=1
-fi
-
-#
-# Work out whether the big_key type is supported by the kernel
-#
 have_big_key_type=0
-if [ $OSDIST = RHEL ] && ! version_less_than $OSRELEASE 7
-then
-    # big_key is backported to 3.10 for RHEL-7
-    have_big_key_type=1
-elif kernel_at_or_later_than 3.13-rc1
-then
-    have_big_key_type=1
-fi
-
-#
-# Work out whether Diffie-Hellman is supported by the kernel
-#
 have_dh_compute=0
-if [ $OSDIST = RHEL ]
-then
-    :
-elif keyutils_at_or_later_than 1.5.10 && kernel_at_or_later_than 4.7-rc1
-then
-    have_dh_compute=1
-fi
-
-#
-# Work out whether keyring restrictions are supported by the kernel
-#
 have_restrict_keyring=0
-if keyutils_at_or_later_than 1.6 && kernel_at_or_later_than 4.12-rc1
+
+if keyctl supports capabilities >&/dev/null
 then
-    have_restrict_keyring=1
+    eval `keyctl supports`
+else
+    #
+    # Work out whether key invalidation is supported by the kernel
+    #
+    if keyutils_at_or_later_than 1.5.6 && kernel_at_or_later_than 3.5-rc1
+    then
+	have_key_invalidate=1
+    fi
+
+    #
+    # Work out whether the big_key type is supported by the kernel.
+    #
+    if [ $OSDIST = RHEL ] && ! version_less_than $OSRELEASE 7
+    then
+	# big_key is backported to 3.10 for RHEL-7
+	have_big_key_type=1
+    elif kernel_at_or_later_than 3.13-rc1
+    then
+	have_big_key_type=1
+    fi
+
+    #
+    # Work out whether Diffie-Hellman is supported by the kernel
+    #
+    if [ $OSDIST = RHEL ]
+    then
+	:
+    elif keyutils_at_or_later_than 1.5.10 && kernel_at_or_later_than 4.7-rc1
+    then
+	have_dh_compute=1
+    fi
+
+    #
+    # Work out whether keyring restrictions are supported by the kernel
+    #
+    if keyutils_at_or_later_than 1.6 && kernel_at_or_later_than 4.12-rc1
+    then
+	have_restrict_keyring=1
+    fi
 fi
 
 #
