@@ -1203,6 +1203,34 @@ function move_key ()
 
 ###############################################################################
 #
+# Query supported features
+#
+###############################################################################
+function supports ()
+{
+    my_exitval=0
+    if [ "x$1" = "x--fail" ]
+    then
+	my_exitval=1
+	shift
+    elif [ "x$1" = "x--unrecognised" ]
+    then
+	my_exitval=3
+	shift
+    fi
+
+    echo keyctl supports $* >>$OUTPUTFILE
+    keyctl supports $* >>$OUTPUTFILE 2>&1
+    err=$?
+    if [ $err != $my_exitval ]
+    then
+	echo exitcode=$err >>$OUTPUTFILE
+	failed
+    fi
+}
+
+###############################################################################
+#
 # Make sure we sleep at least N seconds
 #
 ###############################################################################

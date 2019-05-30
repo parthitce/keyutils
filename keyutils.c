@@ -335,6 +335,56 @@ long keyctl_move(key_serial_t id,
 	return keyctl(KEYCTL_MOVE, id, from_ringid, to_ringid, flags);
 }
 
+long keyctl_capabilities(unsigned char *buffer, size_t buflen)
+{
+	long n;
+
+	n = keyctl(KEYCTL_CAPABILITIES, buffer, buflen);
+	if (n != -1 || errno != EOPNOTSUPP)
+		return n;
+
+	/* Emulate the operation */
+	if (buflen > 0) {
+		memset(buffer, 0, buflen);
+
+		errno = 0;
+		keyctl_get_persistent(-1, 0);
+		if (errno != EOPNOTSUPP)
+			buffer[0] |= KEYCTL_CAPS0_PERSISTENT_KEYRINGS;
+
+		errno = 0;
+		keyctl_dh_compute(0, 0, 0, NULL, 0);
+		if (errno != EOPNOTSUPP)
+			buffer[0] |= KEYCTL_CAPS0_DIFFIE_HELLMAN;
+
+		errno = 0;
+		keyctl_pkey_query(0, NULL, NULL);
+		if (errno != EOPNOTSUPP)
+			buffer[0] |= KEYCTL_CAPS0_PUBLIC_KEY;
+
+		/* Can't emulate KEYCTL_CAPS0_BIG_KEY without a valid
+		 * destination keyring.
+		 */
+
+		errno = 0;
+		keyctl_invalidate(0);
+		if (errno != EOPNOTSUPP)
+			buffer[0] |= KEYCTL_CAPS0_INVALIDATE;
+
+		errno = 0;
+		keyctl_restrict_keyring(0, NULL, NULL);
+		if (errno != EOPNOTSUPP)
+			buffer[0] |= KEYCTL_CAPS0_RESTRICT_KEYRING;
+
+		errno = 0;
+		keyctl_move(0, 0, 0, 0);
+		if (errno != EOPNOTSUPP)
+			buffer[0] |= KEYCTL_CAPS0_MOVE;
+	}
+
+	return sizeof(unsigned char);
+}
+
 /*****************************************************************************/
 /*
  * fetch key description into an allocated buffer

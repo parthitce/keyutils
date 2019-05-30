@@ -95,5 +95,6 @@ KEYUTILS_1.8 {
 KEYUTILS_1.9 {
 	/* Management functions */
 	keyctl_move;
+	keyctl_capabilities;
 
 } KEYUTILS_1.8;
