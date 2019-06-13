@@ -268,7 +268,7 @@ long keyctl_pkey_query(key_serial_t key_id,
 		       const char *info,
 		       struct keyctl_pkey_query *result)
 {
-	return keyctl(KEYCTL_PKEY_QUERY, key_id, info, result);
+	return keyctl(KEYCTL_PKEY_QUERY, key_id, NULL, info, result);
 }
 
 long keyctl_pkey_encrypt(key_serial_t key_id,
