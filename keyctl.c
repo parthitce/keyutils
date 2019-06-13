@@ -1896,7 +1896,7 @@ static void act_keyctl_pkey_query(int argc, char *argv[])
 
 	if (argc < 3)
 		format();
-	pkey_parse_info(argv + 2, info);
+	pkey_parse_info(argv + 3, info);
 
 	key = get_key_id(argv[1]);
 	if (strcmp(argv[2], "0") != 0) {
