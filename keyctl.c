@@ -1931,7 +1931,7 @@ static void act_keyctl_pkey_encrypt(int argc, char *argv[])
 	void *in, *out;
 	char info[4096];
 
-	if (argc < 5)
+	if (argc < 4)
 		format();
 	pkey_parse_info(argv + 4, info);
 
@@ -1971,7 +1971,7 @@ static void act_keyctl_pkey_decrypt(int argc, char *argv[])
 	void *in, *out;
 	char info[4096];
 
-	if (argc < 5)
+	if (argc < 4)
 		format();
 	pkey_parse_info(argv + 4, info);
 
@@ -2011,7 +2011,7 @@ static void act_keyctl_pkey_sign(int argc, char *argv[])
 	void *in, *out;
 	char info[4096];
 
-	if (argc < 5)
+	if (argc < 4)
 		format();
 	pkey_parse_info(argv + 4, info);
 
