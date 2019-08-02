@@ -1,5 +1,5 @@
 %define vermajor 1
-%define verminor 6.1
+%define verminor 6.2
 %define version %{vermajor}.%{verminor}
 %define libapivermajor 1
 %define libapiversion %{libapivermajor}.10
@@ -99,6 +99,18 @@ make \
 %{_libdir}/pkgconfig/libkeyutils.pc
 
 %changelog
+* Mon Jul 6 2020 David Howells <dhowells@redhat.com> - 1.6.2-1
+- Allow "keyctl supports" to retrieve raw capability data.
+- Allow "keyctl id" to turn a symbolic key ID into a numeric ID.
+- Allow "keyctl new_session" to name the keyring.
+- Allow "keyctl add/padd/etc." to take hex-encoded data.
+- Add "keyctl watch*" to expose kernel change notifications on keys.
+- Add caps for namespacing and notifications.
+- Set a default TTL on keys that upcall for name resolution.
+- Explicitly clear memory after it's held sensitive information.
+- Various manual page fixes.
+- Fix C++-related errors.
+
 * Fri Aug 2 2019 David Howells <dhowells@redhat.com> - 1.6.1-1
 - Add support for keyctl_move().
 - Add support for keyctl_capabilities().
