@@ -99,8 +99,14 @@ make \
 %{_libdir}/pkgconfig/libkeyutils.pc
 
 %changelog
-* Wed May 29 2019 David Howells <dhowells@redhat.com> - 1.6.1-1
+* Fri Aug 2 2019 David Howells <dhowells@redhat.com> - 1.6.1-1
 - Add support for keyctl_move().
+- Add support for keyctl_capabilities().
+- Make key=val list optional for various public-key ops.
+- Fix system call signature for KEYCTL_PKEY_QUERY.
+- Fix 'keyctl pkey_query' argument passing.
+- Use keyctl_read_alloc() in dump_key_tree_aux().
+- Various manual page fixes.
 
 * Tue Nov 13 2018 David Howells <dhowells@redhat.com> - 1.6-1
 - Apply various specfile cleanups from Fedora.
