@@ -2116,6 +2116,8 @@ static const struct capability_def capabilities[] = {
 	{ "key_invalidate",		0,	KEYCTL_CAPS0_INVALIDATE },
 	{ "restrict_keyring",		0,	KEYCTL_CAPS0_RESTRICT_KEYRING },
 	{ "move_key",			0,	KEYCTL_CAPS0_MOVE },
+	{ "ns_keyring_name",		1,	KEYCTL_CAPS1_NS_KEYRING_NAME },
+	{ "ns_key_tag",			1,	KEYCTL_CAPS1_NS_KEY_TAG },
 	{}
 };
 

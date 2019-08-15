@@ -232,6 +232,15 @@ The kernel supports the restrict_keyring operation.
 .TP
 .B move_key
 The kernel supports the move key operation.
+.TP
+.B ns_keyring_name
+Keyring names are segregated according to the user-namespace in which the
+keyrings are created.
+.TP
+.B ns_key_tag
+Keys can get tagged with namespace tags, allowing keys with the same type and
+description, but different namespaces to coexist in the same keyring.  Tagging
+is done automatically according to the key type.
 
 .SS Show process keyrings
 \fBkeyctl show [\-x] [<keyring>]\fR
