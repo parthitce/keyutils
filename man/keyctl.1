@@ -15,6 +15,8 @@ keyctl \- key management facility control
 .br
 \fBkeyctl\fR supports [<cap> | --raw]
 .br
+\fBkeyctl\fR id [<keyring>]
+.br
 \fBkeyctl\fR show [\-x] [<keyring>]
 .br
 \fBkeyctl\fR add <type> <desc> <data> <keyring>
@@ -254,6 +256,15 @@ keyrings are created.
 Keys can get tagged with namespace tags, allowing keys with the same type and
 description, but different namespaces to coexist in the same keyring.  Tagging
 is done automatically according to the key type.
+
+.SS Show actual key or keyring ID
+\fBkeyctl id [<key>]\fR
+
+This command looks up the real ID of a key or keyring from the identifier
+given, which is typically a symbolic ID such as "@s" indicating the session
+keyring, but can also be a numeric ID or "%type:desc" notation.  If a special
+keyring is specified that isn't created yet, an error will be given rather than
+causing that keyring to be created.
 
 .SS Show process keyrings
 \fBkeyctl show [\-x] [<keyring>]\fR

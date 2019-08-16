@@ -237,6 +237,32 @@ function pause_till_key_unlinked ()
 
 ###############################################################################
 #
+# Get the ID of a key or keyring.
+#
+###############################################################################
+function id_key ()
+{
+    my_exitval=0
+    if [ "x$1" = "x--fail" ]
+    then
+	my_exitval=1
+	shift
+    elif [ "x$1" = "x--fail2" ]
+    then
+	my_exitval=2
+	shift
+    fi
+
+    echo keyctl id "$@" >>$OUTPUTFILE
+    keyctl id "$@" >>$OUTPUTFILE 2>&1
+    if [ $? != $my_exitval ]
+    then
+	failed
+    fi
+}
+
+###############################################################################
+#
 # request a key and attach it to the new keyring
 #
 ###############################################################################

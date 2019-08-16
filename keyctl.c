@@ -26,6 +26,7 @@
 #include "keyctl.h"
 
 static nr void act_keyctl___version(int argc, char *argv[]);
+static nr void act_keyctl_id(int argc, char *argv[]);
 static nr void act_keyctl_show(int argc, char *argv[]);
 static nr void act_keyctl_add(int argc, char *argv[]);
 static nr void act_keyctl_padd(int argc, char *argv[]);
@@ -85,6 +86,7 @@ static const struct command commands[] = {
 	{ act_keyctl_dh_compute_kdf, "dh_compute_kdf", "<private> <prime> <base> <len> <hash_name>" },
 	{ act_keyctl_dh_compute_kdf_oi, "dh_compute_kdf_oi", "<private> <prime> <base> <len> <hash_name>" },
 	{ act_keyctl_get_persistent, "get_persistent", "<keyring> [<uid>]" },
+	{ act_keyctl_id,	"id",		"<key>" },
 	{ act_keyctl_instantiate, "instantiate","<key> <data> <keyring>" },
 	{ act_keyctl_invalidate,"invalidate",	"<key>" },
 	{ act_keyctl_link,	"link",		"<key> <keyring>" },
@@ -362,6 +364,27 @@ write_mask:
 		perms & KEY_OTH_VIEW	? 'v' : '-');
 
 } /* end calc_perms() */
+
+/*****************************************************************************/
+/*
+ * Get a key or keyring ID.
+ */
+static void act_keyctl_id(int argc, char *argv[])
+{
+	key_serial_t key;
+
+	if (argc != 2)
+		format();
+
+	key = get_key_id(argv[1]);
+
+	key = keyctl_get_keyring_ID(key, 0);
+	if (key < 0)
+		error("keyctl_get_keyring_ID");
+
+	printf("%d\n", key);
+	exit(0);
+}
 
 /*****************************************************************************/
 /*
