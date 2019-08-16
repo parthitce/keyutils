@@ -1028,6 +1028,28 @@ function new_session ()
 
 ###############################################################################
 #
+# Create a new session and attach to the parent process (ie. the script)
+#
+###############################################################################
+function new_session_to_parent ()
+{
+    my_exitval=0
+    if [ "x$1" = "x--fail" ]
+    then
+	my_exitval=1
+	shift
+    fi
+
+    echo keyctl new_session "$@" >>$OUTPUTFILE
+    keyctl new_session "$@" >>$OUTPUTFILE 2>&1
+    if [ $? != $my_exitval ]
+    then
+	failed
+    fi
+}
+
+###############################################################################
+#
 # instantiate a key
 #
 ###############################################################################
