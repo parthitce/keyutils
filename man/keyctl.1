@@ -69,7 +69,7 @@ keyctl \- key management facility control
 .br
 \fBkeyctl\fR setperm <key> <mask>
 .br
-\fBkeyctl\fR new_session
+\fBkeyctl\fR new_session [<name>]
 .br
 \fBkeyctl\fR session
 .br
@@ -736,10 +736,12 @@ unconfined_u:unconfined_r:unconfined_t:s0\-s0:c0.c1023
 .fi
 .RE
 .SS Give the parent process a new session keyring
-\fBkeyctl new_session\fR
+\fBkeyctl new_session [<name>]\fR
 
 This command is used to give the invoking process (typically a shell) a new
-session keyring, discarding its old session keyring.
+session keyring, discarding its old session keyring.  If a name is given, the
+keyring is given that name, otherwise it will be given a name of "_ses" and
+will not be manually joinable.
 
 .RS
 .nf
@@ -761,6 +763,7 @@ call, and so may only affect processes with matching credentials.
 Furthermore, the change does not take effect till the parent process next
 transitions from kernel space to user space - typically when the \fBwait\fP()
 system call returns.
+
 .SS Remove dead keys from the session keyring tree
 \fBkeyctl reap\fR
 

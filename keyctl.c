@@ -93,7 +93,7 @@ static const struct command commands[] = {
 	{ act_keyctl_list,	"list",		"<keyring>" },
 	{ act_keyctl_move,	"move",		"[-f] <key> <from_keyring> <to_keyring>" },
 	{ act_keyctl_negate,	"negate",	"<key> <timeout> <keyring>" },
-	{ act_keyctl_new_session, "new_session",	"" },
+	{ act_keyctl_new_session, "new_session",	"[<name>]" },
 	{ act_keyctl_newring,	"newring",	"<name> <keyring>" },
 	{ act_keyctl_padd,	"padd",		"<type> <desc> <keyring>" },
 	{ act_keyctl_pinstantiate, "pinstantiate","<key> <keyring>" },
@@ -1351,10 +1351,10 @@ static void act_keyctl_new_session(int argc, char *argv[])
 {
 	key_serial_t keyring;
 
-	if (argc != 1)
+	if (argc != 1 && argc != 2)
 		format();
 
-	if (keyctl_join_session_keyring(NULL) < 0)
+	if (keyctl_join_session_keyring(argv[1]) < 0)
 		error("keyctl_join_session_keyring");
 
 	if (keyctl_session_to_parent() < 0)
