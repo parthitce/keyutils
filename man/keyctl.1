@@ -13,7 +13,7 @@ keyctl \- key management facility control
 .SH SYNOPSIS
 \fBkeyctl\fR \-\-version
 .br
-\fBkeyctl\fR supports [<cap>]
+\fBkeyctl\fR supports [<cap> | --raw]
 .br
 \fBkeyctl\fR show [\-x] [<keyring>]
 .br
@@ -180,10 +180,14 @@ keyctl from keyutils\-1.5.3 (Built 2011\-08\-24)
 .fi
 .RE
 .SS Query subsystem capabilities
-\fBkeyctl\fR supports [<cap>]
-
+.nf
+\fBkeyctl\fR supports
+\fBkeyctl\fR supports --raw
+\fBkeyctl\fR supports <cap>
+.fi
+.P
 This command can list the available capabilities:
-
+.P
 .RS
 .nf
 $ keyctl supports
@@ -195,7 +199,16 @@ have_public_key=1
 .fi
 .RE
 .P
-And it can query a capability:
+produce a raw hex dump of the capabilities list:
+.P
+.RS
+.nf
+$ keyctl supports --raw
+ff0f
+.fi
+.RE
+.P
+or query a specific capability:
 
 .RS
 .nf
@@ -205,8 +218,8 @@ echo $?
 .fi
 .RE
 
-which returns 0 if the capability is supported, 1 if it isn't and 3 if the
-name is not recognised.  The capabilities supported are:
+which exits 0 if the capability is supported, 1 if it isn't and 3 if the name
+is not recognised.  The capabilities supported are:
 .TP
 .B capabilities
 The kernel supports capability querying.  If not, the other capabilities will

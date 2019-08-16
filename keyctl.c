@@ -123,7 +123,7 @@ static const struct command commands[] = {
 	{ NULL,			"session",	"<name> [<prog> <arg1> <arg2> ...]" },
 	{ act_keyctl_setperm,	"setperm",	"<key> <mask>" },
 	{ act_keyctl_show,	"show",		"[-x] [<keyring>]" },
-	{ act_keyctl_supports,	"supports",	"[<cap>]" },
+	{ act_keyctl_supports,	"supports",	"[<cap> | --raw]" },
 	{ act_keyctl_timeout,	"timeout",	"<key> <timeout>" },
 	{ act_keyctl_unlink,	"unlink",	"<key> [<keyring>]" },
 	{ act_keyctl_update,	"update",	"<key> <data>" },
@@ -2128,11 +2128,14 @@ static void act_keyctl_supports(int argc, char *argv[])
 {
 	const struct capability_def *p;
 	unsigned char caps[256];
+	size_t len;
+	int i;
 
 	if (argc < 1 || argc > 2)
 		format();
 
-	if (keyctl_capabilities(caps, sizeof(caps)) < 0)
+	len = keyctl_capabilities(caps, sizeof(caps));
+	if (len < 0)
 		error("keyctl_capabilities");
 
 	if (argc == 1) {
@@ -2142,6 +2145,12 @@ static void act_keyctl_supports(int argc, char *argv[])
 			       (caps[p->index] & p->mask) ? '1' : '0');
 		exit(0);
 	} else {
+		if (strcmp(argv[1], "--raw") == 0) {
+			for (i = 0; i < len; i++)
+				printf("%02x", caps[i]);
+			printf("\n");
+		}
+
 		for (p = capabilities; p->name; p++)
 			if (strcmp(argv[1], p->name) == 0)
 				exit((caps[p->index] & p->mask) ? 0 : 1);
