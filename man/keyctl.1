@@ -19,9 +19,9 @@ keyctl \- key management facility control
 .br
 \fBkeyctl\fR show [\-x] [<keyring>]
 .br
-\fBkeyctl\fR add <type> <desc> <data> <keyring>
+\fBkeyctl\fR add [\-x] <type> <desc> <data> <keyring>
 .br
-\fBkeyctl\fR padd <type> <desc> <keyring>
+\fBkeyctl\fR padd [\-x] <type> <desc> <keyring>
 .br
 \fBkeyctl\fR request <type> <desc> [<dest_keyring>]
 .br
@@ -29,9 +29,9 @@ keyctl \- key management facility control
 .br
 \fBkeyctl\fR prequest2 <type> <desc> [<dest_keyring>]
 .br
-\fBkeyctl\fR update <key> <data>
+\fBkeyctl\fR update [\-x] <key> <data>
 .br
-\fBkeyctl\fR pupdate <key>
+\fBkeyctl\fR pupdate [\-x] <key>
 .br
 \fBkeyctl\fR newring <name> <keyring>
 .br
@@ -77,9 +77,9 @@ keyctl \- key management facility control
 .br
 \fBkeyctl\fR session <name> [<prog> <arg1> <arg2> ...]
 .br
-\fBkeyctl\fR instantiate <key> <data> <keyring>
+\fBkeyctl\fR instantiate [\-x] <key> <data> <keyring>
 .br
-\fBkeyctl\fR pinstantiate <key> <keyring>
+\fBkeyctl\fR pinstantiate [\-x] <key> <keyring>
 .br
 \fBkeyctl\fR negate <key> <timeout> <keyring>
 .br
@@ -103,7 +103,7 @@ keyctl \- key management facility control
 .br
 \fBkeyctl\fR dh_compute_kdf <private> <prime> <base> <output_length> <hash_type>
 .br
-\fBkeyctl\fR dh_compute_kdf_oi <private> <prime> <base> <output_length> <hash_type>
+\fBkeyctl\fR dh_compute_kdf_oi [\-x] <private> <prime> <base> <output_length> <hash_type>
 .br
 \fBkeyctl\fR pkey_query <key> <pass> [k=v]*
 .br
@@ -274,9 +274,9 @@ to and what keys and keyrings they contain.  If a keyring is specified then
 that keyring will be dumped instead.  If \fB\-x\fR is specified then the keyring
 IDs will be dumped in hex instead of decimal.
 .SS Add a key to a keyring
-\fBkeyctl add\fR <type> <desc> <data> <keyring>
+\fBkeyctl add\fR [\-x] <type> <desc> <data> <keyring>
 .br
-\fBkeyctl padd\fR <type> <desc> <keyring>
+\fBkeyctl padd\fR [\-x] <type> <desc> <keyring>
 
 This command creates a key of the specified type and description; instantiates
 it with the given data and attaches it to the specified keyring. It then prints
@@ -298,6 +298,10 @@ $ echo \-n stuff | keyctl padd user mykey @u
 26
 .fi
 .RE
+
+If \fB\-x\fR is given, then the data is hex-decoded with whitespace being
+discarded.
+
 .SS Request a key
 \fBkeyctl request\fR <type> <desc> [<dest_keyring>]
 .br
@@ -339,9 +343,9 @@ $ keyctl request user debug:hello
 .fi
 .RE
 .SS Update a key
-\fBkeyctl update\fR <key> <data>
+\fBkeyctl update\fR [\-x] <key> <data>
 .br
-\fBkeyctl pupdate\fR <key>
+\fBkeyctl pupdate\fR [\-x] <key>
 
 This command replaces the data attached to a key with a new set of data. If the
 type of the key doesn't support update then error "Operation not supported"
@@ -359,8 +363,13 @@ taking it from the command line:
 .RS
 .nf
 $ echo \-n zebra | keyctl pupdate 23
+$ echo 616263313233 | keyctl pupdate -x 23
 .fi
 .RE
+
+If \fB\-x\fR is given, then the data is hex-decoded with whitespace being
+discarded.
+
 .SS Create a keyring
 \fBkeyctl newring\fR <name> <keyring>
 
@@ -666,9 +675,9 @@ keyring;4043;4043;3f1f0000;fish
 .fi
 .RE
 .SS Instantiate a key
-\fBkeyctl instantiate\fR <key> <data> <keyring>
+\fBkeyctl instantiate\fR [\-x] <key> <data> <keyring>
 .br
-\fBkeyctl pinstantiate\fR <key> <keyring>
+\fBkeyctl pinstantiate\fR [\-x] <key> <keyring>
 .br
 \fBkeyctl negate\fR <key> <timeout> <keyring>
 .br
@@ -711,6 +720,16 @@ than taking it from the command line:
 $ echo \-n "Debug $3" | keyctl pinstantiate $1 $4
 .fi
 .RE
+
+If \fB\-x\fR is given, then the data is hex-decoded with whitespace being
+discarded:
+
+.RS
+.nf
+$ echo 01 02 03 04 | keyctl pinstantiate -x $1 $4
+.fi
+.RE
+
 .SS Set the expiry time on a key
 \fBkeyctl timeout\fR <key> <timeout>
 
@@ -843,6 +862,9 @@ The result is printed to stdout as a hex dump.
 $ keyctl dh_compute $1 $2 $3
 8 bytes of data in result:
 00010203 04050607
+.fi
+.RE
+
 .SS Compute a Diffie-Hellman shared secret and derive key material
 \fBkeyctl\fR dh_compute_kdf <private> <prime> <base> <output_length> <hash_type>
 
@@ -858,15 +880,17 @@ The operation is compliant to the specification of SP800-56A.
 
 The result is printed to stdout as hex dump.
 .SS Compute a Diffie-Hellman shared secret and apply KDF with other input
-\fBkeyctl\fR dh_compute_kdf_oi <private> <prime> <base> <output_length> <hash_type>
+\fBkeyctl\fR dh_compute_kdf_oi [\-x] <private> <prime> <base> <output_length> <hash_type>
 
 This command is identical to the command
 .IR dh_compute_kdf
 to generate a Diffie-Hellman shared secret followed by a key derivation
 operation. This command allows the caller to provide the other input data
 (OI data) compliant to SP800-56A via stdin.
-.fi
-.RE
+
+If \fB\-x\fR is given, then the data passed to stdin is hex-decoded with
+whitespace being discarded.
+
 .SS Perform public-key operations with an asymmetric key
 \fBkeyctl\fR pkey_query <key> <pass> [k=v]*
 .br

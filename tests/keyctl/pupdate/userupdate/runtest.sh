@@ -21,7 +21,7 @@ expect_payload payload "stuff"
 
 # check that we can update a user key
 marker "PUPDATE USER KEY" 
-pupdate_key $keyid "lizard"
+echo -n "lizard" | pupdate_key $keyid
 
 # read back what we changed it to
 marker "PRINT UPDATED PAYLOAD" 

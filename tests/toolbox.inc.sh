@@ -820,8 +820,8 @@ function update_key ()
 	shift
     fi
 
-    echo keyctl update $1 $2 >>$OUTPUTFILE
-    keyctl update $1 $2 >>$OUTPUTFILE 2>&1
+    echo keyctl update "$@" >>$OUTPUTFILE
+    keyctl update "$@" >>$OUTPUTFILE 2>&1
     if [ $? != $my_exitval ]
     then
 	failed
@@ -842,8 +842,8 @@ function pupdate_key ()
 	shift
     fi
 
-    echo echo -n $2 \| keyctl pupdate $1 >>$OUTPUTFILE
-    echo -n $2 | keyctl pupdate $1 >>$OUTPUTFILE 2>&1
+    echo keyctl pupdate "$@" >>$OUTPUTFILE
+    keyctl pupdate "$@" >>$OUTPUTFILE 2>&1
     if [ $? != $my_exitval ]
     then
 	failed

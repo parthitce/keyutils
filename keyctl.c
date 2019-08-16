@@ -10,6 +10,7 @@
  */
 
 #define _GNU_SOURCE
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -77,17 +78,17 @@ static nr void act_keyctl_supports(int argc, char *argv[]);
 
 static const struct command commands[] = {
 	{ act_keyctl___version,	"--version",	"" },
-	{ act_keyctl_add,	"add",		"<type> <desc> <data> <keyring>" },
+	{ act_keyctl_add,	"add",		"[-x] <type> <desc> <data> <keyring>" },
 	{ act_keyctl_chgrp,	"chgrp",	"<key> <gid>" },
 	{ act_keyctl_chown,	"chown",	"<key> <uid>" },
 	{ act_keyctl_clear,	"clear",	"<keyring>" },
 	{ act_keyctl_describe,	"describe",	"<keyring>" },
 	{ act_keyctl_dh_compute, "dh_compute",	"<private> <prime> <base>" },
 	{ act_keyctl_dh_compute_kdf, "dh_compute_kdf", "<private> <prime> <base> <len> <hash_name>" },
-	{ act_keyctl_dh_compute_kdf_oi, "dh_compute_kdf_oi", "<private> <prime> <base> <len> <hash_name>" },
+	{ act_keyctl_dh_compute_kdf_oi, "dh_compute_kdf_oi", "[-x] <private> <prime> <base> <len> <hash_name>" },
 	{ act_keyctl_get_persistent, "get_persistent", "<keyring> [<uid>]" },
 	{ act_keyctl_id,	"id",		"<key>" },
-	{ act_keyctl_instantiate, "instantiate","<key> <data> <keyring>" },
+	{ act_keyctl_instantiate, "instantiate","[-x] <key> <data> <keyring>" },
 	{ act_keyctl_invalidate,"invalidate",	"<key>" },
 	{ act_keyctl_link,	"link",		"<key> <keyring>" },
 	{ act_keyctl_list,	"list",		"<keyring>" },
@@ -95,8 +96,8 @@ static const struct command commands[] = {
 	{ act_keyctl_negate,	"negate",	"<key> <timeout> <keyring>" },
 	{ act_keyctl_new_session, "new_session",	"[<name>]" },
 	{ act_keyctl_newring,	"newring",	"<name> <keyring>" },
-	{ act_keyctl_padd,	"padd",		"<type> <desc> <keyring>" },
-	{ act_keyctl_pinstantiate, "pinstantiate","<key> <keyring>" },
+	{ act_keyctl_padd,	"padd",		"[-x] <type> <desc> <keyring>" },
+	{ act_keyctl_pinstantiate, "pinstantiate","[-x] <key> <keyring>" },
 	{ act_keyctl_pipe,	"pipe",		"<key>" },
 	{ act_keyctl_pkey_query, "pkey_query",	"<key> <pass> [k=v]*" },
 	{ act_keyctl_pkey_encrypt, "pkey_encrypt", "<key> <pass> <datafile> [k=v]*" },
@@ -105,7 +106,7 @@ static const struct command commands[] = {
 	{ act_keyctl_pkey_verify, "pkey_verify", "<key> <pass> <datafile> <sigfile> [k=v]*" },
 	{ act_keyctl_prequest2,	"prequest2",	"<type> <desc> [<dest_keyring>]" },
 	{ act_keyctl_print,	"print",	"<key>" },
-	{ act_keyctl_pupdate,	"pupdate",	"<key>" },
+	{ act_keyctl_pupdate,	"pupdate",	"[-x] <key>" },
 	{ act_keyctl_purge,	"purge",	"<type>" },
 	{ NULL,			"purge",	"[-p] [-i] <type> <desc>" },
 	{ NULL,			"purge",	"-s <type> <desc>" },
@@ -128,7 +129,7 @@ static const struct command commands[] = {
 	{ act_keyctl_supports,	"supports",	"[<cap> | --raw]" },
 	{ act_keyctl_timeout,	"timeout",	"<key> <timeout>" },
 	{ act_keyctl_unlink,	"unlink",	"<key> [<keyring>]" },
-	{ act_keyctl_update,	"update",	"<key> <data>" },
+	{ act_keyctl_update,	"update",	"[-x] <key> <data>" },
 	{ act_keyctl_test,	"--test",	"..." },
 	{ NULL,			NULL,		NULL }
 };
@@ -290,6 +291,49 @@ static char *grab_stdin(size_t *_size)
 } /* end grab_stdin() */
 
 /*
+ * Convert hex to binary if need be.
+ */
+void hex2bin(void **_data, size_t *_datalen, bool as_hex)
+{
+	unsigned char *buf, *q, h, l;
+	char *p, *end;
+	
+	if (!as_hex || *_datalen == 0)
+		return;
+
+	q = buf = malloc(*_datalen / 2 + 2);
+	if (!buf)
+		error("malloc");
+
+	p = *_data;
+	end = p + *_datalen;
+
+	while (p < end) {
+		if (isspace(*p)) {
+			p++;
+			continue;
+		}
+		if (end - p < 2) {
+			fprintf(stderr, "Short hex doublet\n");
+			exit(1);
+		}
+		if (!isxdigit(p[0]) || !isxdigit(p[1])) {
+			fprintf(stderr, "Bad hex doublet\n");
+			exit(1);
+		}
+
+		h = isdigit(p[0]) ? p[0] - '0' : tolower(p[0]) - 'a' + 0xa;
+		l = isdigit(p[1]) ? p[1] - '0' : tolower(p[1]) - 'a' + 0xa;
+		p += 2;
+		*q++ = (h << 4) | l;
+	}
+
+	*q = 0;
+	*_data = buf;
+	*_datalen = q - buf;
+}
+
+/*
  * Load the groups list and grab the process's UID and GID.
  */
 static void grab_creds(void)
@@ -419,14 +463,27 @@ static void act_keyctl_show(int argc, char *argv[])
 static void act_keyctl_add(int argc, char *argv[])
 {
 	key_serial_t dest;
+	size_t datalen;
+	void *data;
+	bool as_hex = false;
 	int ret;
+
+	if (argc > 1 && strcmp(argv[1], "-x") == 0) {
+		as_hex = true;
+		argc--;
+		argv++;
+	}
 
 	if (argc != 5)
 		format();
 
+	data = argv[3];
+	datalen = strlen(argv[3]);
+	hex2bin(&data, &datalen, as_hex);
+
 	dest = get_key_id(argv[4]);
 
-	ret = add_key(argv[1], argv[2], argv[3], strlen(argv[3]), dest);
+	ret = add_key(argv[1], argv[2], data, datalen, dest);
 	if (ret < 0)
 		error("add_key");
 
@@ -445,15 +502,22 @@ static void act_keyctl_padd(int argc, char *argv[])
 	key_serial_t dest;
 	size_t datalen;
 	void *data;
+	bool as_hex = false;
 	int ret;
 
+	if (argc > 1 && strcmp(argv[1], "-x") == 0) {
+		as_hex = true;
+		argc--;
+		argv++;
+	}
 
 	if (argc != 4)
 		format();
 
-	dest = get_key_id(argv[3]);
-
 	data = grab_stdin(&datalen);
+	hex2bin(&data, &datalen, as_hex);
+
+	dest = get_key_id(argv[3]);
 
 	ret = add_key(argv[1], argv[2], data, datalen, dest);
 	if (ret < 0)
@@ -548,13 +612,26 @@ static void act_keyctl_prequest2(int argc, char *argv[])
 static void act_keyctl_update(int argc, char *argv[])
 {
 	key_serial_t key;
+	size_t datalen;
+	void *data;
+	bool as_hex = false;
+
+	if (argc > 1 && strcmp(argv[1], "-x") == 0) {
+		as_hex = true;
+		argc--;
+		argv++;
+	}
 
 	if (argc != 3)
 		format();
 
+	data = argv[2];
+	datalen = strlen(argv[2]);
+	hex2bin(&data, &datalen, as_hex);
+
 	key = get_key_id(argv[1]);
 
-	if (keyctl_update(key, argv[2], strlen(argv[2])) < 0)
+	if (keyctl_update(key, data, datalen) < 0)
 		error("keyctl_update");
 
 	exit(0);
@@ -570,12 +647,20 @@ static void act_keyctl_pupdate(int argc, char *argv[])
 	key_serial_t key;
 	size_t datalen;
 	void *data;
+	bool as_hex = false;
+
+	if (argc > 1 && strcmp(argv[1], "-x") == 0) {
+		as_hex = true;
+		argc--;
+		argv++;
+	}
 
 	if (argc != 2)
 		format();
 
 	key = get_key_id(argv[1]);
 	data = grab_stdin(&datalen);
+	hex2bin(&data, &datalen, as_hex);
 
 	if (keyctl_update(key, data, datalen) < 0)
 		error("keyctl_update");
@@ -1223,14 +1308,26 @@ static void act_keyctl_session(int argc, char *argv[])
 static void act_keyctl_instantiate(int argc, char *argv[])
 {
 	key_serial_t key, dest;
+	size_t datalen;
+	void *data;
+	bool as_hex = false;
+
+	if (argc > 1 && strcmp(argv[1], "-x") == 0) {
+		as_hex = true;
+		argc--;
+		argv++;
+	}
 
 	if (argc != 4)
 		format();
 
 	key = get_key_id(argv[1]);
 	dest = get_key_id(argv[3]);
+	data = argv[2];
+	datalen = strlen(argv[2]);
+	hex2bin(&data, &datalen, as_hex);
 
-	if (keyctl_instantiate(key, argv[2], strlen(argv[2]), dest) < 0)
+	if (keyctl_instantiate(key, data, datalen, dest) < 0)
 		error("keyctl_instantiate");
 
 	exit(0);
@@ -1246,6 +1343,13 @@ static void act_keyctl_pinstantiate(int argc, char *argv[])
 	key_serial_t key, dest;
 	size_t datalen;
 	void *data;
+	bool as_hex = false;
+
+	if (argc > 1 && strcmp(argv[1], "-x") == 0) {
+		as_hex = true;
+		argc--;
+		argv++;
+	}
 
 	if (argc != 3)
 		format();
@@ -1253,6 +1357,7 @@ static void act_keyctl_pinstantiate(int argc, char *argv[])
 	key = get_key_id(argv[1]);
 	dest = get_key_id(argv[2]);
 	data = grab_stdin(&datalen);
+	hex2bin(&data, &datalen, as_hex);
 
 	if (keyctl_instantiate(key, data, datalen, dest) < 0)
 		error("keyctl_instantiate");
@@ -1798,6 +1903,13 @@ static void act_keyctl_dh_compute_kdf_oi(int argc, char *argv[])
 	unsigned long buflen = 0;
 	size_t oilen;
 	void *oi;
+	bool as_hex = false;
+
+	if (argc > 1 && strcmp(argv[1], "-x") == 0) {
+		as_hex = true;
+		argc--;
+		argv++;
+	}
 
 	if (argc != 6)
 		format();
@@ -1815,6 +1927,7 @@ static void act_keyctl_dh_compute_kdf_oi(int argc, char *argv[])
 		error("dh_compute: cannot allocate memory");
 
 	oi = grab_stdin(&oilen);
+	hex2bin(&oi, &oilen, as_hex);
 
 	ret = keyctl_dh_compute_kdf(private, prime, base, argv[5], oi,  oilen,
 				    buffer, buflen);

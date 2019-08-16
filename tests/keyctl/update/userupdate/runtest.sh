@@ -28,6 +28,15 @@ marker "PRINT UPDATED PAYLOAD"
 print_key $keyid
 expect_payload payload "lizard"
 
+# check that we can update a user key with hex-encoded data
+marker "UPDATE USER KEY HEX" 
+update_key -x $keyid "  6c 697a  6172 64  78  "
+
+# read back what we changed it to
+marker "PRINT UPDATED PAYLOAD" 
+print_key $keyid
+expect_payload payload "lizardx"
+
 # remove the key we added
 marker "UNLINK KEY" 
 unlink_key $keyid @s

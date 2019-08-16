@@ -19,6 +19,16 @@ marker "PRINT PAYLOAD"
 print_key $keyid
 expect_payload payload "stuff"
 
+# check that we can add a hex-encoded user key to the session keyring
+marker "ADD HEX USER KEY"
+pcreate_key "73  7475 66  66  " -x user wibble @s
+expect_keyid keyid
+
+# read back what we put in it
+marker "PRINT PAYLOAD"
+print_key $keyid
+expect_payload payload "stuff"
+
 # check that we can update a user key
 marker "UPDATE USER KEY"
 pcreate_key lizard user wibble @s
