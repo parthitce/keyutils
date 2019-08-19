@@ -23,14 +23,7 @@
 #include <asm/unistd.h>
 #include "keyutils.h"
 #include <limits.h>
-
-struct command {
-	void (*action)(int argc, char *argv[]) __attribute__((noreturn));
-	const char	*name;
-	const char	*format;
-};
-
-#define nr __attribute__((noreturn))
+#include "keyctl.h"
 
 static nr void act_keyctl___version(int argc, char *argv[]);
 static nr void act_keyctl_show(int argc, char *argv[]);
@@ -81,7 +74,7 @@ static nr void act_keyctl_pkey_verify(int argc, char *argv[]);
 static nr void act_keyctl_move(int argc, char *argv[]);
 static nr void act_keyctl_supports(int argc, char *argv[]);
 
-const struct command commands[] = {
+static const struct command commands[] = {
 	{ act_keyctl___version,	"--version",	"" },
 	{ act_keyctl_add,	"add",		"<type> <desc> <data> <keyring>" },
 	{ act_keyctl_chgrp,	"chgrp",	"<key> <gid>" },
@@ -134,12 +127,13 @@ const struct command commands[] = {
 	{ act_keyctl_timeout,	"timeout",	"<key> <timeout>" },
 	{ act_keyctl_unlink,	"unlink",	"<key> [<keyring>]" },
 	{ act_keyctl_update,	"update",	"<key> <data>" },
+	{ act_keyctl_test,	"--test",	"..." },
 	{ NULL,			NULL,		NULL }
 };
 
 static int dump_key_tree(key_serial_t keyring, const char *name, int hex_key_IDs);
 static void format(void) __attribute__((noreturn));
-static void error(const char *msg) __attribute__((noreturn));
+void error(const char *msg) __attribute__((noreturn));
 static key_serial_t get_key_id(char *arg);
 static void *read_file(const char *name, size_t *_size);
 
@@ -152,18 +146,26 @@ static int verbose;
 /*
  * handle an error
  */
-static inline void error(const char *msg)
+void error(const char *msg)
 {
 	perror(msg);
 	exit(1);
-
-} /* end error() */
+}
 
 /*****************************************************************************/
 /*
- * execute the appropriate subcommand
+ * 
  */
 int main(int argc, char *argv[])
+{
+	do_command(argc, argv, commands, "");
+}
+
+/*
+ * Execute the appropriate subcommand.
+ */
+void do_command(int argc, char **argv,
+		const struct command *commands, const char *group)
 {
 	const struct command *cmd, *best;
 	int n;
@@ -194,7 +196,7 @@ int main(int argc, char *argv[])
 
 		/* partial match */
 		if (best) {
-			fprintf(stderr, "Ambiguous command\n");
+			fprintf(stderr, "Ambiguous %scommand\n", group);
 			exit(2);
 		}
 
@@ -202,13 +204,12 @@ int main(int argc, char *argv[])
 	}
 
 	if (!best) {
-		fprintf(stderr, "Unknown command\n");
+		fprintf(stderr, "Unknown %scommand\n", group);
 		exit(2);
 	}
 
 	best->action(argc, argv);
-
-} /* end main() */
+}
 
 /*****************************************************************************/
 /*
