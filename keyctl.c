@@ -139,14 +139,16 @@ static const struct command commands[] = {
 	{ act_keyctl_timeout,	"timeout",	"<key> <timeout>" },
 	{ act_keyctl_unlink,	"unlink",	"<key> [<keyring>]" },
 	{ act_keyctl_update,	"update",	"[-x] <key> <data>" },
+	{ act_keyctl_watch,	"watch",	"<key>" },
+	{ act_keyctl_watch_add,	"watch_add",	"<fd> <key>" },
+	{ act_keyctl_watch_rm,	"watch_rm",	"<fd> <key>" },
+	{ act_keyctl_watch_session, "watch_session", "[-n <name>] <notifylog> <gclog> <fd> <prog> [<arg1> <arg2> ...]" },
+	{ act_keyctl_watch_sync, "watch_sync",	"<fd>" },
 	{ act_keyctl_test,	"--test",	"..." },
 	{ NULL,			NULL,		NULL }
 };
 
 static int dump_key_tree(key_serial_t keyring, const char *name, int hex_key_IDs);
-static void format(void) __attribute__((noreturn));
-void error(const char *msg) __attribute__((noreturn));
-static key_serial_t get_key_id(char *arg);
 static void *read_file(const char *name, size_t *_size);
 
 static uid_t myuid;
@@ -227,7 +229,7 @@ void do_command(int argc, char **argv,
 /*
  * display command format information
  */
-static void format(void)
+void format(void)
 {
 	const struct command *cmd;
 
@@ -2288,6 +2290,7 @@ static const struct capability_def capabilities[] = {
 	{ "move_key",			0,	KEYCTL_CAPS0_MOVE },
 	{ "ns_keyring_name",		1,	KEYCTL_CAPS1_NS_KEYRING_NAME },
 	{ "ns_key_tag",			1,	KEYCTL_CAPS1_NS_KEY_TAG },
+	{ "notify",			1,	KEYCTL_CAPS1_NOTIFICATIONS },
 	{}
 };
 
@@ -2332,7 +2335,7 @@ static void act_keyctl_supports(int argc, char *argv[])
 /*
  * parse a key identifier
  */
-static key_serial_t get_key_id(char *arg)
+key_serial_t get_key_id(char *arg)
 {
 	key_serial_t id;
 	char *end;

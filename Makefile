@@ -149,9 +149,11 @@ endif
 %.o: %.c keyutils.h Makefile
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
 
-keyctl: keyctl.o keyctl_testing.o $(LIB_DEPENDENCY)
-	$(CC) -L. $(CFLAGS) $(LDFLAGS) $(RPATH) -o $@ keyctl.o keyctl_testing.o -lkeyutils
-keyctl.o keyctl_testing.o: keyctl.h
+keyctl: keyctl.o keyctl_testing.o keyctl_watch.o $(LIB_DEPENDENCY)
+	$(CC) -L. $(CFLAGS) $(LDFLAGS) $(RPATH) -o $@ \
+		keyctl.o keyctl_testing.o keyctl_watch.o -lkeyutils
+keyctl.o keyctl_testing.o keyctl_watch.o: keyctl.h
+keyctl_watch.o: watch_queue.h
 
 request-key: request-key.o $(LIB_DEPENDENCY)
 	$(CC) -L. $(CFLAGS) $(LDFLAGS) $(RPATH) -o $@ $< -lkeyutils

@@ -21,9 +21,20 @@ struct command {
  * keyctl.c
  */
 extern nr void do_command(int, char **, const struct command *, const char *);
-extern nr void error(const char *);
+extern nr void format(void) __attribute__((noreturn));
+extern nr void error(const char *) __attribute__((noreturn));
+extern key_serial_t get_key_id(char *);
 
 /*
  * keyctl_testing.c
  */
 extern nr void act_keyctl_test(int, char *[]);
+
+/*
+ * keyctl_watch.c
+ */
+extern nr void act_keyctl_watch(int , char *[]);
+extern nr void act_keyctl_watch_add(int , char *[]);
+extern nr void act_keyctl_watch_rm(int , char *[]);
+extern nr void act_keyctl_watch_session(int , char *[]);
+extern nr void act_keyctl_watch_sync(int , char *[]);
