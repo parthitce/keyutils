@@ -17,12 +17,9 @@ fi
 
 # Find the various trusted keys
 marker "FIND BUILTIN TRUSTED KEYRINGS"
-id_key %:.builtin_trusted_keys
-expect_keyid btk
-id_key %:.secondary_trusted_keys
-expect_keyid stk
-id_key %:.blacklist
-expect_keyid blk
+id_key --to=btk %:.builtin_trusted_keys
+id_key --to=stk %:.secondary_trusted_keys
+id_key --to=blk %:.blacklist
 
 # There should be at least one built-in trusted key for module signing.
 list_keyring $btk

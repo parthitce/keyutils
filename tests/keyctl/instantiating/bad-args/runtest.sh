@@ -20,8 +20,7 @@ expect_error EPERM
 
 # create a non-keyring
 marker "CREATE KEY"
-create_key user lizard gizzard @s
-expect_keyid keyid
+create_key --new=keyid user lizard gizzard @s
 
 # check that instantiation of an instantiated key fails
 marker "CHECK ALREADY INSTANTIATED KEY"

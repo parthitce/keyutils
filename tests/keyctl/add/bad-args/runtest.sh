@@ -43,8 +43,8 @@ expect_error EINVAL
 if [ $PAGE_SIZE -lt $maxsquota ]
 then
     marker "CHECK MAXLEN DESC"
-    create_key user $maxdesc stuff @p
-    expect_keyid keyid
+    create_key --new=keyid user $maxdesc stuff @s
+    clear_keyring @s
 else
     marker "CHECK MAXLEN DESC FAILS WITH EDQUOT"
     create_key --fail user $maxdesc stuff @p

@@ -69,14 +69,10 @@ a328e894 acc343f4 66a95281 86cea6a3 93eb4fee f83c0e2e f4a00ce6 fcc9ef81
 cc4624d5 ba659411 d1ba7b5f 14a3e286 d42e6ac8 afa9f846 41cb7cb5 66965725
 EOF
 
-create_key -x user dh:prime $prime @s
-expect_keyid primeid
-
-create_key -x user dh:generator $generator @s
-expect_keyid generatorid
-
-create_key -x user dh:private $private @s
-expect_keyid privateid
+marker "LOAD SOURCE KEYS"
+create_key --new=primeid     -x user dh:prime     $prime @s
+create_key --new=generatorid -x user dh:generator $generator @s
+create_key --new=privateid   -x user dh:private   $private @s
 
 marker "COMPUTE DH PUBLIC KEY"
 dh_compute $privateid $primeid $generatorid
@@ -92,6 +88,7 @@ echo "++++ FINISHED TEST: $result" >>$OUTPUTFILE
 ################################################################
 
 # SHA-256
+marker "LOAD SHA-256 SOURCE KEYS"
 
 # XephemCAVS
 private="81b2c65f5cbac00b1353ac38bd77a25a"
@@ -154,14 +151,9 @@ read -d '' derived <<"EOF"
 8284e313 02c8a26b 393ec52d 9f9e0882
 EOF
 
-create_key -x user dh:prime $prime @s
-expect_keyid primeid
-
-create_key -x user dh:xa $xa @s
-expect_keyid xaid
-
-create_key -x user dh:private $private @s
-expect_keyid privateid
+create_key --update=primeid   -x user dh:prime   $prime @s
+create_key --new=xaid         -x user dh:xa      $xa @s
+create_key --update=privateid -x user dh:private $private @s
 
 marker "COMPUTE DH SHARED SECRET"
 dh_compute $privateid $primeid $xaid
@@ -171,8 +163,7 @@ marker "COMPUTE DERIVED KEY FROM DH SHARED SECRET (SHA-256)"
 echo -e -n $otherinfo | dh_compute_kdf_oi -x $privateid $primeid $xaid 16 "sha256"
 expect_multiline payload "$derived"
 
-create_key -x user dh:leadingzero "01" @s
-expect_keyid lzid
+create_key --new=lzid -x user dh:leadingzero "01" @s
 
 read -d '' derived2 <<"EOF"
 0066207b cdab1d64 bbf489b3 d6a0dadc
@@ -183,6 +174,7 @@ echo -e -n $otherinfo | dh_compute_kdf_oi -x $privateid $primeid $lzid 16 "sha25
 expect_multiline payload "$derived2"
 
 # SHA-224
+marker "LOAD SHA-224 SOURCE KEYS"
 
 # XephemCAVS
 private="861ba259aba6aa577de22f508ecbbc26"
@@ -245,14 +237,9 @@ read -d '' derived <<"EOF"
 88bf39c0 08eec33a dc3b4430 054ba262
 EOF
 
-create_key -x user dh:prime $prime @s
-expect_keyid primeid
-
-create_key -x user dh:xa $xa @s
-expect_keyid xaid
-
-create_key -x user dh:private $private @s
-expect_keyid privateid
+create_key --update=primeid   -x user dh:prime   $prime @s
+create_key --update=xaid      -x user dh:xa      $xa @s
+create_key --update=privateid -x user dh:private $private @s
 
 marker "COMPUTE DH SHARED SECRET"
 dh_compute $privateid $primeid $xaid

@@ -243,20 +243,49 @@ function pause_till_key_unlinked ()
 function id_key ()
 {
     my_exitval=0
-    if [ "x$1" = "x--fail" ]
-    then
-	my_exitval=1
-	shift
-    elif [ "x$1" = "x--fail2" ]
-    then
-	my_exitval=2
-	shift
-    fi
+    case "x$1" in
+	x--to=*)
+	    my_exitval=0
+	    my_varname=${1#--to=}
+	    my_keyid=v
+	    ;;
+	x--fail)
+	    my_exitval=1
+	    my_keyid=x
+	    ;;
+	x--fail2)
+	    my_exitval=2
+	    my_keyid=x
+	    ;;
+	*)
+	    echo "BAD id_key ARGUMENT" >&2
+	    failed
+	    return
+	    ;;
+    esac
+    shift
 
     echo keyctl id "$@" >>$OUTPUTFILE
     keyctl id "$@" >>$OUTPUTFILE 2>&1
-    if [ $? != $my_exitval ]
+    e=$?
+    if [ $e == $my_exitval ]
     then
+	if [ $e = 0 ]
+	then
+	    got_keyid="`tail -1 $OUTPUTFILE`"
+	    if expr "$got_keyid" : '[1-9][0-9]*' >&/dev/null
+	    then
+		if [ $my_keyid == v ]
+		then
+		    eval $my_varname=$got_keyid
+		fi
+	    else
+		echo "CAN'T EXTRACT KEY ID FROM create_key OUTPUT" >&2
+		eval $my_varname=no
+		result=FAIL
+	    fi
+	fi
+    else
 	failed
     fi
 }
@@ -269,16 +298,51 @@ function id_key ()
 function request_key ()
 {
     my_exitval=0
-    if [ "x$1" = "x--fail" ]
-    then
-	my_exitval=1
-	shift
-    fi
+    case "x$1" in
+	x--new=*)
+	    my_exitval=0
+	    my_varname=${1#--new=}
+	    my_keyid=v
+	    ;;
+	x--old=*)
+	    my_exitval=0
+	    my_keyid=${1#--old=}
+	    ;;
+	x--fail)
+	    my_exitval=1
+	    my_keyid=x
+	    ;;
+	*)
+	    echo "BAD request_key ARGUMENT" >&2
+	    failed
+	    return
+	    ;;
+    esac
+    shift
+
+    my_keyring=$3
 
     echo keyctl request "$@" >>$OUTPUTFILE
     keyctl request "$@" >>$OUTPUTFILE 2>&1
-    if [ $? != $my_exitval ]
+    e=$?
+    if [ $e == $my_exitval ]
     then
+	if [ $e = 0 ]
+	then
+	    got_keyid="`tail -1 $OUTPUTFILE`"
+	    if expr "$got_keyid" : '[1-9][0-9]*' >&/dev/null
+	    then
+		if [ $my_keyid == v ]
+		then
+		    eval $my_varname=$got_keyid
+		fi
+	    else
+		echo "CAN'T EXTRACT KEY ID FROM create_key OUTPUT" >&2
+		eval $my_varname=no
+		result=FAIL
+	    fi
+	fi
+    else
 	failed
     fi
 }
@@ -291,16 +355,51 @@ function request_key ()
 function request_key_callout ()
 {
     my_exitval=0
-    if [ "x$1" = "x--fail" ]
-    then
-	my_exitval=1
-	shift
-    fi
+    case "x$1" in
+	x--new=*)
+	    my_exitval=0
+	    my_varname=${1#--new=}
+	    my_keyid=v
+	    ;;
+	x--old=*)
+	    my_exitval=0
+	    my_keyid=${1#--old=}
+	    ;;
+	x--fail)
+	    my_exitval=1
+	    my_keyid=x
+	    ;;
+	*)
+	    echo "BAD request_key_callout ARGUMENT" >&2
+	    failed
+	    return
+	    ;;
+    esac
+    shift
+
+    my_keyring=$4
 
     echo keyctl request2 "$@" >>$OUTPUTFILE
     keyctl request2 "$@" >>$OUTPUTFILE 2>&1
-    if [ $? != $my_exitval ]
+    e=$?
+    if [ $e == $my_exitval ]
     then
+	if [ $e = 0 ]
+	then
+	    got_keyid="`tail -1 $OUTPUTFILE`"
+	    if expr "$got_keyid" : '[1-9][0-9]*' >&/dev/null
+	    then
+		if [ $my_keyid == v ]
+		then
+		    eval $my_varname=$got_keyid
+		fi
+	    else
+		echo "CAN'T EXTRACT KEY ID FROM create_key OUTPUT" >&2
+		eval $my_varname=no
+		result=FAIL
+	    fi
+	fi
+    else
 	failed
     fi
 }
@@ -314,19 +413,54 @@ function request_key_callout ()
 function prequest_key_callout ()
 {
     my_exitval=0
-    if [ "x$1" = "x--fail" ]
-    then
-	my_exitval=1
-	shift
-    fi
+    case "x$1" in
+	x--new=*)
+	    my_exitval=0
+	    my_varname=${1#--new=}
+	    my_keyid=v
+	    ;;
+	x--old=*)
+	    my_exitval=0
+	    my_keyid=${1#--old=}
+	    ;;
+	x--fail)
+	    my_exitval=1
+	    my_keyid=x
+	    ;;
+	*)
+	    echo "BAD request_key_callout ARGUMENT" >&2
+	    failed
+	    return
+	    ;;
+    esac
+    shift
 
     data="$1"
     shift
 
+    my_keyring=$3
+
     echo echo -n $data \| keyctl prequest2 "$@" >>$OUTPUTFILE
     echo -n $data | keyctl prequest2 "$@" >>$OUTPUTFILE 2>&1
-    if [ $? != $my_exitval ]
+    e=$?
+    if [ $e == $my_exitval ]
     then
+	if [ $e = 0 ]
+	then
+	    got_keyid="`tail -1 $OUTPUTFILE`"
+	    if expr "$got_keyid" : '[1-9][0-9]*' >&/dev/null
+	    then
+		if [ $my_keyid == v ]
+		then
+		    eval $my_varname=$got_keyid
+		fi
+	    else
+		echo "CAN'T EXTRACT KEY ID FROM create_key OUTPUT" >&2
+		eval $my_varname=no
+		result=FAIL
+	    fi
+	fi
+    else
 	failed
     fi
 }
@@ -339,16 +473,57 @@ function prequest_key_callout ()
 function create_key ()
 {
     my_exitval=0
-    if [ "x$1" = "x--fail" ]
+    case "x$1" in
+	x--new=*)
+	    my_exitval=0
+	    my_varname=${1#--new=}
+	    my_keyid=v
+	    ;;
+	x--update=*)
+	    my_exitval=0
+	    my_keyid=${1#--update=}
+	    ;;
+	x--fail)
+	    my_exitval=1
+	    my_keyid=x
+	    ;;
+	*)
+	    echo "BAD create_key ARGUMENT" >&2
+	    failed
+	    return
+	    ;;
+    esac
+    shift
+
+    if [ "$1" = "-x" ]
     then
-	my_exitval=1
-	shift
+	my_keyring=$5
+    else
+	my_keyring=$4
     fi
 
     echo keyctl add "$@" >>$OUTPUTFILE
     keyctl add "$@" >>$OUTPUTFILE 2>&1
-    if [ $? != $my_exitval ]
+    e=$?
+    if [ $e == $my_exitval ]
     then
+	if [ $e = 0 ]
+	then
+	    got_keyid="`tail -1 $OUTPUTFILE`"
+	    if expr "$got_keyid" : '[1-9][0-9]*' >&/dev/null
+	    then
+		if [ $my_keyid == v ]
+		then
+		    eval $my_varname=$got_keyid
+		fi
+
+	    else
+		echo "CAN'T EXTRACT KEY ID FROM create_key OUTPUT" >&2
+		eval $my_varname=no
+		result=FAIL
+	    fi
+	fi
+    else
 	failed
     fi
 }
@@ -361,19 +536,59 @@ function create_key ()
 function pcreate_key ()
 {
     my_exitval=0
-    if [ "x$1" = "x--fail" ]
-    then
-	my_exitval=1
-	shift
-    fi
-
+    case "x$1" in
+	x--new=*)
+	    my_exitval=0
+	    my_varname=${1#--new=}
+	    my_keyid=v
+	    ;;
+	x--update=*)
+	    my_exitval=0
+	    my_keyid=${1#--update=}
+	    ;;
+	x--fail)
+	    my_exitval=1
+	    my_keyid=x
+	    ;;
+	*)
+	    echo "BAD pcreate_key ARGUMENT" >&2
+	    failed
+	    return
+	    ;;
+    esac
+    shift
     data="$1"
     shift
 
+    if [ "$1" = "-x" ]
+    then
+	my_keyring=$4
+    else
+	my_keyring=$3
+    fi
+
     echo echo -n $data \| keyctl padd "$@" >>$OUTPUTFILE
     echo -n $data | keyctl padd "$@" >>$OUTPUTFILE 2>&1
-    if [ $? != $my_exitval ]
+    e=$?
+    if [ $e == $my_exitval ]
     then
+	if [ $e = 0 ]
+	then
+	    got_keyid="`tail -1 $OUTPUTFILE`"
+	    if expr "$got_keyid" : '[1-9][0-9]*' >&/dev/null
+	    then
+		if [ $my_keyid == v ]
+		then
+		    eval $my_varname=$got_keyid
+		fi
+
+	    else
+		echo "CAN'T EXTRACT KEY ID FROM pcreate_key OUTPUT" >&2
+		eval $my_varname=no
+		result=FAIL
+	    fi
+	fi
+    else
 	failed
     fi
 }
@@ -386,19 +601,53 @@ function pcreate_key ()
 function pcreate_key_by_size ()
 {
     my_exitval=0
-    if [ "x$1" = "x--fail" ]
-    then
-	my_exitval=1
-	shift
-    fi
-
+    case "x$1" in
+	x--new=*)
+	    my_exitval=0
+	    my_varname=${1#--new=}
+	    my_keyid=v
+	    ;;
+	x--update=*)
+	    my_exitval=0
+	    my_keyid=${1#--update=}
+	    ;;
+	x--fail)
+	    my_exitval=1
+	    my_keyid=x
+	    ;;
+	*)
+	    echo "BAD create_key ARGUMENT" >&2
+	    failed
+	    return
+	    ;;
+    esac
+    shift
     data="$1"
     shift
+    my_keyring=$3
 
     echo dd if=/dev/zero count=1 bs=$data \| keyctl padd "$@" >>$OUTPUTFILE
     dd if=/dev/zero count=1 bs=$data 2>/dev/null | keyctl padd "$@" >>$OUTPUTFILE 2>&1
-    if [ $? != $my_exitval ]
+    e=$?
+    if [ $e == $my_exitval ]
     then
+	if [ $e = 0 ]
+	then
+	    got_keyid="`tail -1 $OUTPUTFILE`"
+	    if expr "$got_keyid" : '[1-9][0-9]*' >&/dev/null
+	    then
+		if [ $my_keyid == v ]
+		then
+		    eval $my_varname=$got_keyid
+		fi
+
+	    else
+		echo "CAN'T EXTRACT KEY ID FROM pcreate_key_by_size OUTPUT" >&2
+		eval $my_varname=no
+		result=FAIL
+	    fi
+	fi
+    else
 	failed
     fi
 }
@@ -411,41 +660,44 @@ function pcreate_key_by_size ()
 function create_keyring ()
 {
     my_exitval=0
-    if [ "x$1" = "x--fail" ]
-    then
-	my_exitval=1
-	shift
-    fi
+    case "x$1" in
+	x--new=*)
+	    my_exitval=0
+	    my_varname=${1#--new=}
+	    my_keyid=v
+	    ;;
+	x--fail)
+	    my_exitval=1
+	    my_keyid=x
+	    ;;
+	*)
+	    echo "BAD create_key ARGUMENT" >&2
+	    failed
+	    return
+	    ;;
+    esac
+    shift
+    my_keyring=$2
 
     echo keyctl newring "$@" >>$OUTPUTFILE
     keyctl newring "$@" >>$OUTPUTFILE 2>&1
-    if [ $? != $my_exitval ]
+    e=$?
+    if [ $e == $my_exitval ]
     then
-	failed
-    fi
-}
-
-###############################################################################
-#
-# extract a key ID from the log file
-#
-###############################################################################
-function expect_keyid ()
-{
-    my_varname=$1
-
-    my_keyid="`tail -1 $OUTPUTFILE`"
-    if expr "$my_keyid" : '[1-9][0-9]*' >&/dev/null
-    then
-	eval $my_varname=$my_keyid
-
-	if [ $# = 2 -a "x$my_keyid" != "x$2" ]
+	if [ $e = 0 ]
 	then
-	    failed
+	    got_keyid="`tail -1 $OUTPUTFILE`"
+	    if expr "$got_keyid" : '[1-9][0-9]*' >&/dev/null
+	    then
+		eval $my_varname=$got_keyid
+	    else
+		echo "CAN'T EXTRACT KEY ID FROM create_keyring OUTPUT" >&2
+		eval $my_varname=no
+		result=FAIL
+	    fi
 	fi
     else
-	eval $my_varname=no
-	result=FAIL
+	failed
     fi
 }
 
@@ -924,16 +1176,47 @@ function link_key ()
 function search_for_key ()
 {
     my_exitval=0
-    if [ "x$1" = "x--fail" ]
-    then
-	my_exitval=1
-	shift
-    fi
+    case "x$1" in
+	x--expect=*)
+	    my_exitval=0
+	    my_keyid=${1#--expect=}
+	    ;;
+	x--fail)
+	    my_exitval=1
+	    my_keyid=x
+	    ;;
+	*)
+	    echo "BAD create_key ARGUMENT" >&2
+	    failed
+	    return
+	    ;;
+    esac
+    shift
 
     echo keyctl search "$@" >>$OUTPUTFILE
     keyctl search "$@" >>$OUTPUTFILE 2>&1
-    if [ $? != $my_exitval ]
+    e=$?
+    if [ $e == $my_exitval ]
     then
+	if [ $e = 0 ]
+	then
+	    got_keyid="`tail -1 $OUTPUTFILE`"
+	    if expr "$got_keyid" : '[1-9][0-9]*' >&/dev/null
+	    then
+		if [ $got_keyid = $my_keyid ]
+		then
+		    :
+		else
+		    echo "KEY MISMATCH $got_keyid != $my_keyid" >&2
+		    failed
+		fi
+	    else
+		echo "CAN'T EXTRACT KEY ID FROM search_for_key OUTPUT" >&2
+		eval $my_varname=no
+		result=FAIL
+	    fi
+	fi
+    else
 	failed
     fi
 }

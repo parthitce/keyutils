@@ -67,8 +67,7 @@ expect_error EINVAL
 
 # create a non-keyring key
 marker "CREATE KEY"
-create_key user a a @s
-expect_keyid keyid
+create_key --new=keyid user a a @s
 
 # search the non-keyring key
 marker "SEARCH KEY"

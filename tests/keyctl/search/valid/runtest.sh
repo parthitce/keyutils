@@ -11,16 +11,12 @@ echo "++++ BEGINNING TEST" >$OUTPUTFILE
 
 # create a pair of keyrings and attach them to the session keyring
 marker "ADD KEYRING"
-create_keyring wibble @s
-expect_keyid keyringid
-
-create_keyring wibble2 @s
-expect_keyid keyring2id
+create_keyring --new=keyringid wibble @s
+create_keyring --new=keyring2id wibble2 @s
 
 # stick a key in the keyring
 marker "ADD KEY"
-create_key user lizard gizzard $keyringid
-expect_keyid keyid
+create_key --new=keyid user lizard gizzard $keyringid
 
 # check that we can list it
 marker "LIST KEYRING WITH ONE"
@@ -34,13 +30,11 @@ expect_error ENOKEY
 
 # search the session keyring for the key
 marker "SEARCH SESSION"
-search_for_key @s user lizard
-expect_keyid found $keyid
+search_for_key --expect=$keyid @s user lizard
 
 # search the session keyring for the key and attach to second keyring
 marker "SEARCH SESSION AND ATTACH"
-search_for_key @s user lizard $keyring2id
-expect_keyid found $keyid
+search_for_key --expect=$keyid @s user lizard $keyring2id
 
 # check it's attached to the second keyring
 marker "CHECK ATTACHED"
@@ -54,11 +48,10 @@ expect_payload payload "gizzard"
 
 # detach the attachment just made
 marker "DETACH KEY"
-unlink_key $found $keyring2id
+unlink_key $keyid $keyring2id
 
 # create an overlapping key in the second keyring
-create_key user lizard skin $keyring2id
-expect_keyid keyid2
+create_key --new=keyid2 user lizard skin $keyring2id
 
 # check the two keys contain what we expect
 marker "CHECK PAYLOADS"
@@ -69,18 +62,15 @@ expect_payload payload "skin"
 
 # a search from the session keyring should find the first key
 marker "SEARCH SESSION AGAIN"
-search_for_key @s user lizard
-expect_keyid found $keyid
+search_for_key --expect=$keyid @s user lizard
 
 # a search from the first keyring should find the first key
 marker "SEARCH FIRST KEYRING"
-search_for_key $keyringid user lizard
-expect_keyid found $keyid
+search_for_key --expect=$keyid $keyringid user lizard
 
 # a search from the second keyring should find the second key
 marker "SEARCH SECOND KEYRING"
-search_for_key $keyring2id user lizard
-expect_keyid found $keyid2
+search_for_key --expect=$keyid2 $keyring2id user lizard
 
 # link the second keyring to the first
 marker "LINK FIRST KEYRING TO SECOND"
@@ -88,13 +78,11 @@ link_key $keyring2id $keyringid
 
 # a search from the first keyring should again find the first key
 marker "SEARCH FIRST KEYRING AGAIN"
-search_for_key $keyringid user lizard
-expect_keyid found $keyid
+search_for_key --expect=$keyid $keyringid user lizard
 
 # revoking the first key should cause the second key to be available
 revoke_key $keyid
-search_for_key $keyringid user lizard
-expect_keyid found $keyid2
+search_for_key --expect=$keyid2 $keyringid user lizard
 
 # get rid of the dead key
 marker "UNLINK FIRST KEY"
@@ -102,13 +90,11 @@ unlink_key $keyid $keyringid
 
 # a search from the first keyring should now find the second key
 marker "SEARCH FIRST KEYRING AGAIN 2"
-search_for_key $keyringid user lizard
-expect_keyid found $keyid2
+search_for_key --expect=$keyid2 $keyringid user lizard
 
 # a search from the session keyring should now find the second key
 marker "SEARCH SESSION KEYRING AGAIN 2"
-search_for_key @s user lizard
-expect_keyid found $keyid2
+search_for_key --expect=$keyid2 @s user lizard
 
 # unlink the second keyring from the first
 marker "UNLINK SECOND KEYRING FROM FIRST"
@@ -121,8 +107,7 @@ expect_error ENOKEY
 
 # a search from the session keyring should still find the second key
 marker "SEARCH SESSION KEYRING AGAIN 3"
-search_for_key @s user lizard
-expect_keyid found $keyid2
+search_for_key --expect=$keyid2 @s user lizard
 
 # move the second keyring into the first
 marker "MOVE SECOND KEYRING INTO FIRST"
@@ -131,8 +116,7 @@ unlink_key $keyring2id @s
 
 # a search from the first keyring should now find the second key once again
 marker "SEARCH FIRST KEYRING AGAIN 4"
-search_for_key $keyringid user lizard
-expect_keyid found $keyid2
+search_for_key --expect=$keyid2 $keyringid user lizard
 
 # removing search permission on the second keyring should hide the key
 marker "SEARCH WITH NO-SEARCH KEYRING"
@@ -143,8 +127,7 @@ expect_error ENOKEY
 # putting search permission on the second keyring back again should make it
 # available again
 set_key_perm $keyring2id 0x3f0000
-search_for_key $keyringid user lizard
-expect_keyid found $keyid2
+search_for_key --expect=$keyid2 $keyringid user lizard
 
 # removing search permission on the second key should hide the key
 marker "SEARCH WITH NO-SEARCH KEYRING2"
@@ -155,8 +138,7 @@ expect_error ENOKEY
 # putting search permission on the second key back again should make it
 # available again
 set_key_perm $keyring2id 0x3f0000
-search_for_key $keyringid user lizard
-expect_keyid found $keyid2
+search_for_key --expect=$keyid2 $keyringid user lizard
 
 # revoking the key should make the key unavailable
 revoke_key $keyid2

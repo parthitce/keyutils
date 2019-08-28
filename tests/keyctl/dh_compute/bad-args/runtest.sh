@@ -58,17 +58,10 @@ private+="\x50\x08\x66\xd5\x46\x1c\x5f\xa3\x54\x02\x38\x32\x4a\x29\xf3"
 private+="\x16\xe0\x68\xf3\xba\x17\x37\xd0\x42\xcb\x51\xa8\x97\x1b\xc7"
 private+="\xa2"
 
-pcreate_key "-e $prime" user dh:prime @s
-expect_keyid primeid
-
-pcreate_key "-e $generator" user dh:generator @s
-expect_keyid generatorid
-
-pcreate_key "-e $private" user dh:private @s
-expect_keyid privateid
-
-pcreate_key "-e \x00" logon dh:logon @s
-expect_keyid logonid
+pcreate_key --new=primeid	"-e $prime"	user dh:prime @s
+pcreate_key --new=generatorid	"-e $generator"	user dh:generator @s
+pcreate_key --new=privateid	"-e $private"	user dh:private @s
+pcreate_key --new=logonid	"-e \x00"	logon dh:logon @s
 
 marker "CHECK WRONG KEY TYPE"
 dh_compute --fail $privateid $primeid $logonid

@@ -13,11 +13,11 @@ echo "++++ BEGINNING TEST" >$OUTPUTFILE
 if [ $PAGE_SIZE -lt $maxsquota ]
 then
     marker "CHECK MAXLEN DESC"
-    create_keyring $maxdesc @p
-    expect_keyid keyid
+    create_keyring --new=keyid $maxdesc @s
+    clear_keyring @s
 else
     marker "CHECK MAXLEN DESC FAILS WITH EDQUOT"
-    create_keyring --fail $maxdesc @p
+    create_keyring --fail $maxdesc @s
     expect_error EDQUOT
 fi
 
@@ -29,13 +29,13 @@ if kernel_at_or_later_than 3.19 ||
 then
 	# check that an overlong key description fails correctly (>4095 inc NUL)
 	marker "CHECK OVERLONG DESC"
-	create_keyring --fail a$maxdesc @p
+	create_keyring --fail a$maxdesc @s
 	expect_error EINVAL
 fi
 
 # check that an empty keyring name fails
 marker "CHECK EMPTY KEYRING NAME"
-create_keyring --fail "" @p
+create_keyring --fail "" @s
 expect_error EINVAL
 
 # check that a bad key ID fails correctly

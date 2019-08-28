@@ -11,8 +11,7 @@ echo "++++ BEGINNING TEST" >$OUTPUTFILE
 
 # check that we can add a user key to the session keyring
 marker "ADD USER KEY" 
-create_key user wibble stuff @s
-expect_keyid keyid
+create_key --new=keyid user wibble stuff @s
 
 # read back what we put in it
 marker "PRINT PAYLOAD" 
