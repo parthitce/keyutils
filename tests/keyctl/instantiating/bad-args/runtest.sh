@@ -17,6 +17,8 @@ pinstantiate_key --fail a 0 @p
 expect_error EPERM
 negate_key --fail 0 10 @p
 expect_error EPERM
+reject_key --fail 0 10 rejected @p
+expect_error EPERM
 
 # create a non-keyring
 marker "CREATE KEY"
@@ -28,8 +30,18 @@ instantiate_key --fail $keyid a @p
 expect_error EPERM
 pinstantiate_key --fail a $keyid @p
 expect_error EPERM
+reject_key --fail $keyid 10 rejected @p
+expect_error EPERM
 negate_key --fail $keyid 10 @p
 expect_error EPERM
+
+# check reject key timeout must be a number
+marker "CHECK REJECT TIMEOUT"
+expect_args_error keyctl reject $keyid aa rejected @p
+
+# check reject key timeout must be a number
+marker "CHECK REJECT ERRORS"
+expect_args_error keyctl reject $keyid 10 notanerror @p
 
 # check negative key timeout must be a number
 marker "CHECK NEGATE TIMEOUT"
@@ -44,6 +56,8 @@ marker "CHECK NON-EXISTENT KEY ID"
 instantiate_key --fail $keyid a @p
 expect_error EPERM
 pinstantiate_key --fail a $keyid @p
+expect_error EPERM
+reject_key --fail $keyid 10 rejected @p
 expect_error EPERM
 negate_key --fail $keyid 10 @p
 expect_error EPERM
