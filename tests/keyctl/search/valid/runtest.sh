@@ -32,6 +32,11 @@ expect_error ENOKEY
 marker "SEARCH SESSION"
 search_for_key --expect=$keyid @s user lizard
 
+# search the session keyring for the key using the wrong type
+marker "SEARCH SESSION USING WRONG TYPE"
+search_for_key --fail @s keyring lizard $keyring2id
+expect_error ENOKEY
+
 # search the session keyring for the key and attach to second keyring
 marker "SEARCH SESSION AND ATTACH"
 search_for_key --expect=$keyid @s user lizard $keyring2id
