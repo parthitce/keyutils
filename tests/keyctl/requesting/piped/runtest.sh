@@ -49,7 +49,7 @@ marker "CHECK ATTACHMENT TO SESSION KEYRING"
 list_keyring @s
 expect_keyring_rlist rlist $keyid
 
-# rerequesting should pick up that key again
+# re-requesting should pick up that key again
 marker "REDO PIPED CALL OUT REQUEST KEY TO SESSION"
 prequest_key_callout --old=$keyid gizzard user debug:lizard
 
@@ -76,7 +76,7 @@ marker "CHECK ATTACHMENT TO SESSION"
 list_keyring @s
 expect_keyring_rlist rlist $keyid
 
-# rerequesting should pick up that key again
+# re-requesting should pick up that key again
 marker "REDO PIPED CALL OUT REQUEST KEY TO KEYRING"
 prequest_key_callout --old=$keyid gizzard user debug:lizard $keyringid
 

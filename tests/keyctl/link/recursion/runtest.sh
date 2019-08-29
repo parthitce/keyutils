@@ -79,7 +79,7 @@ marker "RECURSE 7"
 link_key --fail $keyringid $keyring7id
 expect_error EDEADLK
 
-# create an eigth keyring in the seventh
+# create an eighth keyring in the seventh
 marker "CREATE KEYRING 8"
 create_keyring --new=keyring8id "eighth" @s
 set_key_perm $keyring8id 0x3f3f0000
