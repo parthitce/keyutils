@@ -41,11 +41,11 @@ unlink_key --wait $keyid @s
 
 # check that a non-existent key ID fails correctly
 marker "CHECK NON-EXISTENT KEY ID"
-instantiate_key --fail 0 a @p
+instantiate_key --fail $keyid a @p
 expect_error EPERM
-pinstantiate_key --fail a 0 @p
+pinstantiate_key --fail a $keyid @p
 expect_error EPERM
-negate_key --fail 0 10 @p
+negate_key --fail $keyid 10 @p
 expect_error EPERM
 
 echo "++++ FINISHED TEST: $result" >>$OUTPUTFILE
