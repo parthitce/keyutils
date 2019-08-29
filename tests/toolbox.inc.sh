@@ -13,10 +13,10 @@
 echo === $OUTPUTFILE ===
 
 endian=`file -L /proc/$$/exe`
-if expr "$endian" : '.* MSB \+\(executable\|shared object\).*' >&/dev/null
+if expr "$endian" : '.* MSB \+\(pie executable\|executable\|shared object\).*' >&/dev/null
 then
     endian=BE
-elif expr "$endian" : '.* LSB \+\(executable\|shared object\).*' >&/dev/null
+elif expr "$endian" : '.* LSB \+\(pie executable\|executable\|shared object\).*' >&/dev/null
 then
     endian=LE
 else
