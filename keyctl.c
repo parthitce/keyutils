@@ -999,7 +999,7 @@ static void act_keyctl_list(int argc, char *argv[])
 		n = sscanf((char *) buffer, "%*[^;]%n;%d;%d;%x;%n",
 			   &tlen, &uid, &gid, &perm, &dpos);
 		if (n != 3) {
-			fprintf(stderr, "Unparseable description obtained for key %d\n", key);
+			fprintf(stderr, "Unparsable description obtained for key %d\n", key);
 			exit(3);
 		}
 
@@ -1092,7 +1092,7 @@ static void act_keyctl_describe(int argc, char *argv[])
 	n = sscanf(buffer, "%*[^;]%n;%d;%d;%x;%n",
 		   &tlen, &uid, &gid, &perm, &dpos);
 	if (n != 3) {
-		fprintf(stderr, "Unparseable description obtained for key %d\n", key);
+		fprintf(stderr, "Unparsable description obtained for key %d\n", key);
 		exit(3);
 	}
 
@@ -2429,7 +2429,7 @@ static int dump_key_tree_aux(key_serial_t key, int depth, int more, int hex_key_
 		   type, &uid, &gid, &perm, &dpos);
 
 	if (n != 4) {
-		fprintf(stderr, "Unparseable description obtained for key %d\n", key);
+		fprintf(stderr, "Unparsable description obtained for key %d\n", key);
 		exit(3);
 	}
 
