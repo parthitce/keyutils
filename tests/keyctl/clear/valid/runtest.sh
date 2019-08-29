@@ -75,7 +75,7 @@ then
 fi
 
 # clear the keyring
-marker "CLEAR KEYRING WITH ONE"
+marker "CLEAR KEYRING WITH MANY"
 clear_keyring $keyringid
 
 # check that it's now empty yet again
