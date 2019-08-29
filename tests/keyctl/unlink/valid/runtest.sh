@@ -31,7 +31,7 @@ marker "CHECK NO UNLINK KEY FROM KEYRING"
 unlink_key --fail $keyid $keyringid
 expect_error ENOKEY
 
-# check that the keyring is now empty 
+# check that the keyring is now empty
 marker "LIST KEYRING"
 list_keyring $keyringid
 expect_keyring_rlist rlist empty
@@ -80,7 +80,7 @@ done
 
 keyctl show
 
-# check that it's now empty 
+# check that it's now empty
 marker "LIST KEYRING"
 list_keyring $keyringid
 expect_keyring_rlist rlist empty

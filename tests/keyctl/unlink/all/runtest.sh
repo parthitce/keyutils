@@ -34,7 +34,7 @@ then
     unlink_key $keyid
     expect_unlink_count n_unlinked 0
 
-    # check that the keyring is now empty 
+    # check that the keyring is now empty
     marker "LIST KEYRING"
     list_keyring $keyringid
     expect_keyring_rlist rlist empty
