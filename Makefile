@@ -58,7 +58,7 @@ LIBNAME		:= libkeyutils.so.$(APIVERSION)
 #
 ###############################################################################
 ifeq ($(origin LIBDIR),undefined)
-LIBDIR		:= $(shell ldd /usr/bin/make | grep '\(/libc\)' | sed -e 's!.*\(/.*\)/libc[.].*!\1!')
+LIBDIR		:= $(shell ldd /usr/bin/make | grep '\(/libc[.]\)' | sed -e 's!.*\(/.*\)/libc[.].*!\1!')
 endif
 ifeq ($(origin USRLIBDIR),undefined)
 USRLIBDIR	:= $(patsubst /lib/%,/usr/lib/%,$(LIBDIR))
