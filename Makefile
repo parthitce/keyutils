@@ -269,10 +269,10 @@ ZSRCBALL := rpmbuild/SOURCES/$(ZTARBALL)
 
 BUILDID	:= .local
 dist	:= $(word 2,$(shell grep -r "^%dist" /etc/rpm /usr/lib/rpm))
-release3:= $(word 2,$(shell grep ^Release: $(SPECFILE)))
-release2:= $(subst %{?dist},$(dist),$(release3))
-release1:= $(subst %{?buildid},$(BUILDID),$(release2))
-release	:= $(subst %{?distprefix},,$(release1))
+release0:= $(word 2,$(shell grep ^Release: $(SPECFILE)))
+release1:= $(subst %{?dist},$(dist),$(release0))
+release2:= $(subst %{?buildid},$(BUILDID),$(release1))
+release	:= $(shell echo $(release2) | sed -e s!%{[^}]*}!!g)
 rpmver	:= $(VERSION)-$(release)
 SRPM	:= rpmbuild/SRPMS/keyutils-$(rpmver).src.rpm
 
@@ -287,13 +287,15 @@ RPMBUILDDIRS := \
 RPMFLAGS := \
 	--define "buildid $(BUILDID)"
 
-rpm:
+srpm:
 	mkdir -p rpmbuild
 	chmod ug-s rpmbuild
 	mkdir -p rpmbuild/{SPECS,SOURCES,BUILD,BUILDROOT,RPMS,SRPMS}
 	git archive --prefix=keyutils-$(VERSION)/ --format tar -o $(SRCBALL) HEAD
 	bzip2 -9 <$(SRCBALL) >$(ZSRCBALL)
 	rpmbuild -ts $(ZSRCBALL) --define "_srcrpmdir rpmbuild/SRPMS" $(RPMFLAGS)
+
+rpm: srpm
 	rpmbuild --rebuild $(SRPM) $(RPMBUILDDIRS) $(RPMFLAGS)
 
 rpmlint: rpm
@@ -312,3 +314,5 @@ show_vars:
 	@echo BUILDFOR=$(BUILDFOR)
 	@echo SONAME=$(SONAME)
 	@echo LIBNAME=$(LIBNAME)
+	@echo SRPM=$(SRPM)
+	@echo rpmver=$(rpmver)
