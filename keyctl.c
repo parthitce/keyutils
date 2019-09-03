@@ -139,10 +139,10 @@ static const struct command commands[] = {
 	{ act_keyctl_timeout,	"timeout",	"<key> <timeout>" },
 	{ act_keyctl_unlink,	"unlink",	"<key> [<keyring>]" },
 	{ act_keyctl_update,	"update",	"[-x] <key> <data>" },
-	{ act_keyctl_watch,	"watch",	"<key>" },
+	{ act_keyctl_watch,	"watch",	"[-f<filters>] <key>" },
 	{ act_keyctl_watch_add,	"watch_add",	"<fd> <key>" },
 	{ act_keyctl_watch_rm,	"watch_rm",	"<fd> <key>" },
-	{ act_keyctl_watch_session, "watch_session", "[-n <name>] <notifylog> <gclog> <fd> <prog> [<arg1> <arg2> ...]" },
+	{ act_keyctl_watch_session, "watch_session", "[-f<filters>] [-n <name>] <notifylog> <gclog> <fd> <prog> [<arg1> <arg2> ...]" },
 	{ act_keyctl_watch_sync, "watch_sync",	"<fd>" },
 	{ act_keyctl_test,	"--test",	"..." },
 	{ NULL,			NULL,		NULL }

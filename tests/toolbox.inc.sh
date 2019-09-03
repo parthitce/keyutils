@@ -1834,6 +1834,100 @@ function set_gc_delay()
 
 ###############################################################################
 #
+# watch a key
+#
+###############################################################################
+function watch_key ()
+{
+    my_exitval=0
+    if [ "x$1" = "x--fail" ]
+    then
+	my_exitval=1
+	shift
+    elif [ "x$1" = "x--fail2" ]
+    then
+	my_exitval=2
+	shift
+    fi
+
+    echo keyctl watch "$@" >>$OUTPUTFILE
+    nice --adjustment=-3 keyctl watch "$@" >>$PWD/notify.log 2>>$OUTPUTFILE
+    if [ $? != $my_exitval ]
+    then
+	failed
+    fi
+}
+
+###############################################################################
+#
+# Check for a notification
+#
+#	expect_notification [--filter=[i|p|l|n|c|r|v|s]] <keyid> <op> [<alt>]
+#
+###############################################################################
+function expect_notification ()
+{
+    local want
+
+    local filter=""
+    case "x$1" in
+	x--filter*)
+	    case $1 in
+		--filter=)  filter=;;
+		--filter=i) filter=inst;;
+		--filter=p) filter=upd;;
+		--filter=l) filter=link;;
+		--filter=n) filter=unlk;;
+		--filter=c) filter=clr;;
+		--filter=r) filter=rev;;
+		--filter=v) filter=inv;;
+		--filter=s) filter=attr;;
+		*)
+		    echo "Unknown param $1 to expect_notification()" >&2
+		    exit 2
+		    ;;
+	    esac
+	    shift
+	    ;;
+    esac
+    
+    if [ $# = 2 ]
+    then
+	want="$1 $2"
+	op=$2
+    elif [ $# = 3 ]
+    then
+	want="$1 $2 $3"
+	op=$2
+    else
+	echo "Wrong parameters to expect_notification" >&2
+	exit 2
+    fi
+
+    if tail -3 $PWD/notify.log | grep "^${want}\$" >/dev/null
+    then
+	echo "Found notification '$*'" >>$OUTPUTFILE
+	if [ "$filter" != "" -a $op != "$filter" ]
+	then
+	    echo "Notification '$want' should be filtered" >&2
+	    failed
+	fi
+    else
+	echo "Notification '$*' not present" >>$OUTPUTFILE
+	if [ "$filter" = "" ]
+	then
+	    echo "Missing notification '$want'" >&2
+	    failed
+	elif [ $op = "$filter" ]
+	then
+	    echo "Notification unexpectedly filtered '$want' $filter" >&2
+	    failed
+	fi
+    fi
+}
+
+###############################################################################
+#
 # Note the creation of a new key
 #
 #	expect_new_key <variable_name> <keyring> [<expected_id>]
