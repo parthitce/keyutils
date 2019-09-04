@@ -123,26 +123,50 @@ unlink_key $keyring2id @s
 marker "SEARCH FIRST KEYRING AGAIN 4"
 search_for_key --expect=$keyid2 $keyringid user lizard
 
-# removing search permission on the second keyring should hide the key
+# Removing search permission on the first keyring should hide the key
+# - This fails with EACCES as we don't have permission to initiate a search.
 marker "SEARCH WITH NO-SEARCH KEYRING"
-set_key_perm $keyring2id 0x370000
+set_key_perm $keyringid 0x370000
 search_for_key --fail $keyringid user lizard
+expect_error EACCES
+
+# But if we start at the session keyring, we just can't find the key
+search_for_key --fail @s user lizard
 expect_error ENOKEY
 
-# putting search permission on the second keyring back again should make it
+# putting search permission on the first keyring back again should make it
 # available again
-set_key_perm $keyring2id 0x3f0000
+set_key_perm $keyringid 0x3f0000
 search_for_key --expect=$keyid2 $keyringid user lizard
 
-# removing search permission on the second key should hide the key
+# Removing search permission on the second key should hide the key
+# - This fails with ENOKEY because we're allowed to start the search, but then
+#   don't find the key because there's an unsearchable keyring in the path.
 marker "SEARCH WITH NO-SEARCH KEYRING2"
 set_key_perm $keyring2id 0x370000
 search_for_key --fail $keyringid user lizard
+expect_error ENOKEY
+search_for_key --fail @s user lizard
 expect_error ENOKEY
 
 # putting search permission on the second key back again should make it
 # available again
 set_key_perm $keyring2id 0x3f0000
+search_for_key --expect=$keyid2 $keyringid user lizard
+
+# Removing search permission on the second key should hide the key
+# - This fails with EACCES because we found the key, but we're not allowed to
+#   find it.
+marker "SEARCH WITH NO-SEARCH KEY2"
+set_key_perm $keyid2 0x370000
+search_for_key --fail $keyringid user lizard
+expect_error EACCES
+search_for_key --fail @s user lizard
+expect_error EACCES
+
+# putting search permission on the second key back again should make it
+# available again
+set_key_perm $keyid2 0x3f0000
 search_for_key --expect=$keyid2 $keyringid user lizard
 
 # revoking the key should make the key unavailable
