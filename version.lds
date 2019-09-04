@@ -98,3 +98,7 @@ KEYUTILS_1.9 {
 	keyctl_capabilities;
 
 } KEYUTILS_1.8;
+
+KEYUTILS_1.10 {
+
+} KEYUTILS_1.9;
