@@ -112,6 +112,7 @@ typedef uint32_t key_perm_t;
 #define KEYCTL_RESTRICT_KEYRING		29	/* Restrict keys allowed to link to a keyring */
 #define KEYCTL_MOVE			30	/* Move keys between keyrings */
 #define KEYCTL_CAPABILITIES		31	/* Find capabilities of keyrings subsystem */
+#define KEYCTL_WATCH_KEY		32	/* Watch a key or ring of keys for changes */
 
 /* keyctl structures */
 struct keyctl_dh_params {
@@ -168,6 +169,7 @@ struct keyctl_pkey_params {
 #define KEYCTL_CAPS0_MOVE		0x80 /* KEYCTL_MOVE supported */
 #define KEYCTL_CAPS1_NS_KEYRING_NAME	0x01 /* Keyring names are per-user_namespace */
 #define KEYCTL_CAPS1_NS_KEY_TAG		0x02 /* Key indexing can include a namespace tag */
+#define KEYCTL_CAPS1_NOTIFICATIONS	0x04 /* Keys generate watchable notifications */
 
 /*
  * syscall wrappers
@@ -255,6 +257,7 @@ extern long keyctl_move(key_serial_t id,
 			key_serial_t to_ringid,
 			unsigned int flags);
 extern long keyctl_capabilities(unsigned char *buffer, size_t buflen);
+extern long keyctl_watch_key(key_serial_t id, int watch_queue_fd, int watch_id);
 
 /*
  * utilities

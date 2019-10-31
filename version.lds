@@ -100,5 +100,7 @@ KEYUTILS_1.9 {
 } KEYUTILS_1.8;
 
 KEYUTILS_1.10 {
+	/* Management functions */
+	keyctl_watch_key;
 
 } KEYUTILS_1.9;

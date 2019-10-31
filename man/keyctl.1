@@ -114,6 +114,15 @@ keyctl \- key management facility control
 \fBkeyctl\fR pkey_sign <key> <pass> <datafile> [k=v]* ><sigfile>
 .br
 \fBkeyctl\fR pkey_decrypt <key> <pass> <datafile> <sigfile> [k=v]*
+.br
+\fBkeyctl\fR watch <key>
+.br
+\fBkeyctl\fR watch_add <fd> <key>
+.br
+\fBkeyctl\fR watch_rm <fd> <key>
+.br
+\fBkeyctl\fR watch_session [-n <name>] \\
+                <notifylog> <gclog> <fd> <prog> [<arg1> <arg2> ...]
 .SH DESCRIPTION
 This program is used to control the key management facility in various ways
 using a variety of subcommands.
@@ -943,6 +952,89 @@ keyctl pkey_verify $k 0 foo.hash foo.sig enc=pkcs1 hash=sha256
 .RE
 .PP
 See asymmetric-key(7) for more information.
+
+.SS Change notifications
+\fBkeyctl\fR watch <key>
+.br
+\fBkeyctl\fR watch_session [-n <name>] \\
+                <notifylog> <gclog> <fd> <prog> [<arg1> <arg2> ...]
+\fBkeyctl\fR watch_add <fd> <key>
+.br
+\fBkeyctl\fR watch_rm <fd> <key>
+.br
+.PP
+The
+.B watch
+command watches a single key, printing notifications to stdout until the key
+is destroyed.
+.PP
+The output of the command looks like:
+.PP
+.RS
+.nf
+.RI < keyid "> <" event "> [<" aux ">]"
+.fi
+.RE
+.PP
+Where
+.I keyid
+is the primary subject of the notification,
+.I op
+is the event and
+.I aux
+is the secondary key if there is one (such as link where the primary key is
+the keyring secondary key is the key being linked in to it).  For example:
+.PP
+.RS
+.nf
+255913279 link 340681059
+255913279 clr
+.fi
+.RE
+.PP
+An additional notication is generated when a key being watched is garbage
+collected, e.g.:
+.PP
+.RS
+.nf
+255913279 gc
+.fi
+.RE
+.PP
+The
+.B watch_session
+command creates a new session keyring, with name
+.I name
+if given, watches it for notifications and runs program
+.I prog
+with it.  The program is given the specified arguments.
+.PP
+A second process is forked off to monitor the notifications.  The output from
+that is directed to the files
+.I notifylog
+for most notifications and
+.I gclog
+for key removal notifications (which are asynchronous and may be deferred).
+.PP
+The
+.BR watch_queue (7)
+device is exported to the program attached to fd number
+.IR fd .
+This can be passed by the other two commands.
+.PP
+The
+.B watch_add
+command adds a watch on
+.I key
+to the
+.B watch_queue
+attached to
+.I fd
+as exported by watch_session and the
+.B watch_rm
+caommand removes it.  A watch_queue can handle multiple keys and even non-keys
+sources as well.
+
 
 .SH ERRORS
 There are a number of common errors returned by this program:
