@@ -5,7 +5,7 @@
 #include <linux/types.h>
 #include <sys/ioctl.h>
 
-#define O_NOTIFICATION_PIPE __O_TMPFILE /* Parameter to pipe2() */
+#define O_NOTIFICATION_PIPE	O_EXCL	/* Parameter to pipe2() selecting notification pipe */
 
 #define IOC_WATCH_QUEUE_SET_SIZE	_IO('W', 0x60)	/* Set the size in pages */
 #define IOC_WATCH_QUEUE_SET_FILTER	_IO('W', 0x61)	/* Set the filter */
