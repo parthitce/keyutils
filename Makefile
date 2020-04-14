@@ -268,12 +268,12 @@ SRCBALL	:= rpmbuild/SOURCES/$(TARBALL)
 ZSRCBALL := rpmbuild/SOURCES/$(ZTARBALL)
 
 BUILDID	:= .local
-dist	:= $(word 2,$(shell grep -r "^%dist" /etc/rpm /usr/lib/rpm))
-release0:= $(word 2,$(shell grep ^Release: $(SPECFILE)))
-release1:= $(subst %{?dist},$(dist),$(release0))
-release2:= $(subst %{?buildid},$(BUILDID),$(release1))
-release	:= $(shell echo $(release2) | sed -e s!%{[^}]*}!!g)
-rpmver	:= $(VERSION)-$(release)
+rpmver0	:= $(shell rpmspec -q ./keyutils.spec --define "buildid $(BUILDID)")
+rpmver1	:= $(word 1,$(rpmver0))
+rpmver2	:= $(subst ., ,$(rpmver1))
+rpmver3	:= $(lastword $(rpmver2))
+rpmver4	:= $(patsubst %.$(rpmver3),%,$(rpmver1))
+rpmver	:= $(patsubst keyutils-%,%,$(rpmver4))
 SRPM	:= rpmbuild/SRPMS/keyutils-$(rpmver).src.rpm
 
 RPMBUILDDIRS := \
