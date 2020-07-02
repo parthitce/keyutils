@@ -15,6 +15,10 @@
 #include <sys/types.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern const char keyutils_version_string[];
 extern const char keyutils_build_string[];
 
@@ -270,5 +274,9 @@ extern int recursive_key_scan(key_serial_t key, recursive_key_scanner_t func, vo
 extern int recursive_session_key_scan(recursive_key_scanner_t func, void *data);
 extern key_serial_t find_key_by_type_and_desc(const char *type, const char *desc,
 					      key_serial_t destringid);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* KEYUTILS_H */
