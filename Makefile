@@ -1,5 +1,6 @@
 CPPFLAGS	:= -I.
 CFLAGS		:= -g -Wall -Werror
+CXXFLAGS	:= -g -Wall -Werror
 INSTALL		:= install
 DESTDIR		:=
 SPECFILE	:= keyutils.spec
@@ -99,7 +100,7 @@ endif
 # Normal build rule
 #
 ###############################################################################
-all: keyctl request-key key.dns_resolver
+all: keyctl request-key key.dns_resolver cxx
 
 ###############################################################################
 #
@@ -164,6 +165,18 @@ key.dns_resolver: key.dns_resolver.o dns.afsdb.o $(LIB_DEPENDENCY)
 
 key.dns_resolver.o: key.dns_resolver.c key.dns.h
 dns.afsdb.o: dns.afsdb.c key.dns.h
+
+###############################################################################
+#
+# Check that the header file has valid C++ syntax
+#
+###############################################################################
+cxx.stamp: keyutils.h Makefile
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -x c++-header -fsyntax-only $<
+	touch $@
+
+cxx: cxx.stamp
+.PHONY: cxx
 
 ###############################################################################
 #
@@ -247,6 +260,7 @@ clean:
 	$(RM) keyctl request-key key.dns_resolver
 	$(RM) *.o *.os *~
 	$(RM) debugfiles.list debugsources.list
+	$(RM) cxx.stamp
 
 distclean: clean
 	$(RM) -r rpmbuild $(TARBALL)
