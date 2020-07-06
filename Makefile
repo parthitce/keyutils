@@ -256,7 +256,7 @@ test:
 ###############################################################################
 clean:
 	$(MAKE) -C tests clean
-	$(RM) libkeyutils.so* libkeyutils.a
+	$(RM) libkeyutils.so* libkeyutils.a libkeyutils.pc
 	$(RM) keyctl request-key key.dns_resolver
 	$(RM) *.o *.os *~
 	$(RM) debugfiles.list debugsources.list
