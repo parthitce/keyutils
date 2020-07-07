@@ -1,5 +1,5 @@
 %define vermajor 1
-%define verminor 6.2
+%define verminor 6.3
 %define version %{vermajor}.%{verminor}
 %define libapivermajor 1
 %define libapiversion %{libapivermajor}.10
@@ -99,6 +99,10 @@ make \
 %{_libdir}/pkgconfig/libkeyutils.pc
 
 %changelog
+* Tue Jul 7 2020 David Howells <dhowells@redhat.com> - 1.6.3-1
+- Revert the change notifications that were using /dev/watch_queue.
+- Apply the change notifications that use pipe2(O_NOTIFICATION_PIPE).
+
 * Mon Jul 6 2020 David Howells <dhowells@redhat.com> - 1.6.2-1
 - Allow "keyctl supports" to retrieve raw capability data.
 - Allow "keyctl id" to turn a symbolic key ID into a numeric ID.
