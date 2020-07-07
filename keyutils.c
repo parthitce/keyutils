@@ -385,11 +385,6 @@ long keyctl_capabilities(unsigned char *buffer, size_t buflen)
 	return sizeof(unsigned char);
 }
 
-long keyctl_watch_key(key_serial_t id, int watch_queue_fd, int watch_id)
-{
-	return keyctl(KEYCTL_WATCH_KEY, id, watch_queue_fd, watch_id);
-}
-
 /*****************************************************************************/
 /*
  * fetch key description into an allocated buffer

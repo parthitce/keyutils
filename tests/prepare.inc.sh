@@ -74,7 +74,6 @@ have_key_invalidate=0
 have_big_key_type=0
 have_dh_compute=0
 have_restrict_keyring=0
-have_notify=0
 
 if keyctl supports capabilities >&/dev/null
 then
