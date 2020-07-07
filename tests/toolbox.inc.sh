@@ -59,10 +59,6 @@ function marker ()
 {
     echo -e "+++ \e[33m$*\e[0m"
     echo +++ $* >>$OUTPUTFILE
-    if [ "$watch_log" != "" ]
-    then
-	echo +++ $* >>$watch_log
-    fi
 }
 
 function failed()
@@ -192,100 +188,6 @@ function expect_error ()
     then
 	:
     else
-	failed
-    fi
-}
-
-###############################################################################
-#
-# Watch a key for notifications.
-#
-###############################################################################
-function watch_add_key ()
-{
-    my_keyid=$1
-
-    if [ $watch_fd = 0 ]; then return; fi
-
-    keyctl watch_add $watch_fd $my_keyid || failed
-}
-
-###############################################################################
-#
-# Check for a notification on the last or last-but-one lines of the
-# notification log.
-#
-###############################################################################
-function check_notify ()
-{
-    if [ $watch_fd = 0 ]; then return; fi
-
-    keyctl watch_sync $watch_fd || failed
-
-    if [ "$1" = "-2" ]
-    then
-	shift
-	my_logline="`tail -2 $watch_log | head -1`"
-    else
-	my_logline="`tail -1 $watch_log`"
-    fi
-
-    my_subtype=$1
-    case $my_subtype in
-	revoked)
-	    my_key1=$2
-	    ;;
-	invalidated)
-	    my_key1=$2
-	    ;;
-	*)
-	    case $2 in
-		@*)
-		    my_key1=`keyctl id $2`
-		    ;;
-		*)
-		    my_key1=$2
-	    esac
-	;;
-    esac
-    my_key2=$3
-
-    case $my_subtype in
-	instantiated)
-	    exp="$my_key1 inst"
-	    ;;
-	updated)
-	    exp="$my_key1 upd"
-	    ;;
-	linked)
-	    exp="$my_key1 link $my_key2"
-	    ;;
-	unlinked)
-	    exp="$my_key1 unlk $my_key2"
-	    ;;
-	cleared)
-	    exp="$my_key1 clr"
-	    ;;
-	revoked)
-	    exp="$my_key1 rev"
-	    ;;
-	invalidated)
-	    exp="$my_key1 inv"
-	    ;;
-	setattr)
-	    exp="$my_key1 attr"
-	    ;;
-	*)
-	    echo "INCORRECT check_notify SUBTYPE" >&2
-	    failed
-	    ;;
-    esac
-
-    if [ "$exp" != "$my_logline" ]
-    then
-	echo "\"$exp\"" != "\"$my_logline\""
-	echo "check_notify: \"$exp\"" != "\"$my_logline\"" >>$OUTPUTFILE
-	echo "^^^ failed ^^^" >>$watch_log
 	failed
     fi
 }
@@ -433,12 +335,6 @@ function request_key ()
 		if [ $my_keyid == v ]
 		then
 		    eval $my_varname=$got_keyid
-		    watch_add_key $got_keyid
-		fi
-
-		if [ $# = 3 ]
-		then
-		    check_notify linked $my_keyring $got_keyid
 		fi
 	    else
 		echo "CAN'T EXTRACT KEY ID FROM create_key OUTPUT" >&2
@@ -496,16 +392,6 @@ function request_key_callout ()
 		if [ $my_keyid == v ]
 		then
 		    eval $my_varname=$got_keyid
-		    watch_add_key $got_keyid
-		    if [ $# = 4 ]
-		    then
-			check_notify -2 linked $my_keyring $got_keyid
-		    fi
-		else
-		    if [ $# = 4 ]
-		    then
-			check_notify linked $my_keyring $got_keyid
-		    fi
 		fi
 	    else
 		echo "CAN'T EXTRACT KEY ID FROM create_key OUTPUT" >&2
@@ -542,7 +428,7 @@ function prequest_key_callout ()
 	    my_keyid=x
 	    ;;
 	*)
-	    echo "BAD prequest_key_callout ARGUMENT" >&2
+	    echo "BAD request_key_callout ARGUMENT" >&2
 	    failed
 	    return
 	    ;;
@@ -567,16 +453,6 @@ function prequest_key_callout ()
 		if [ $my_keyid == v ]
 		then
 		    eval $my_varname=$got_keyid
-		    watch_add_key $got_keyid
-		    if [ $# = 4 ]
-		    then
-			check_notify -2 linked $my_keyring $got_keyid
-		    fi
-		else
-		    if [ $# = 3 ]
-		    then
-			check_notify linked $my_keyring $got_keyid
-		    fi
 		fi
 	    else
 		echo "CAN'T EXTRACT KEY ID FROM create_key OUTPUT" >&2
@@ -639,10 +515,6 @@ function create_key ()
 		if [ $my_keyid == v ]
 		then
 		    eval $my_varname=$got_keyid
-		    watch_add_key $got_keyid
-		    check_notify linked $my_keyring $got_keyid
-		else
-		    check_notify updated $got_keyid
 		fi
 
 	    else
@@ -708,10 +580,6 @@ function pcreate_key ()
 		if [ $my_keyid == v ]
 		then
 		    eval $my_varname=$got_keyid
-		    watch_add_key $got_keyid
-		    check_notify linked $my_keyring $got_keyid
-		else
-		    check_notify updated $got_keyid
 		fi
 
 	    else
@@ -748,7 +616,7 @@ function pcreate_key_by_size ()
 	    my_keyid=x
 	    ;;
 	*)
-	    echo "BAD pcreate_key_by_size ARGUMENT" >&2
+	    echo "BAD create_key ARGUMENT" >&2
 	    failed
 	    return
 	    ;;
@@ -771,10 +639,6 @@ function pcreate_key_by_size ()
 		if [ $my_keyid == v ]
 		then
 		    eval $my_varname=$got_keyid
-		    watch_add_key $got_keyid
-		    check_notify linked $my_keyring $got_keyid
-		else
-		    check_notify updated $got_keyid
 		fi
 
 	    else
@@ -807,7 +671,7 @@ function create_keyring ()
 	    my_keyid=x
 	    ;;
 	*)
-	    echo "BAD create_keyring ARGUMENT" >&2
+	    echo "BAD create_key ARGUMENT" >&2
 	    failed
 	    return
 	    ;;
@@ -826,8 +690,6 @@ function create_keyring ()
 	    if expr "$got_keyid" : '[1-9][0-9]*' >&/dev/null
 	    then
 		eval $my_varname=$got_keyid
-		watch_add_key $got_keyid
-		check_notify linked $my_keyring $got_keyid
 	    else
 		echo "CAN'T EXTRACT KEY ID FROM create_keyring OUTPUT" >&2
 		eval $my_varname=no
@@ -1130,14 +992,8 @@ function revoke_key ()
 
     echo keyctl revoke $1 >>$OUTPUTFILE
     keyctl revoke $1 >>$OUTPUTFILE 2>&1
-    e=$?
-    if [ $e == $my_exitval ]
+    if [ $? != $my_exitval ]
     then
-	if [ $e = 0 ]
-	then
-	    check_notify revoked $1
-	fi
-    else
 	failed
     fi
 }
@@ -1165,14 +1021,8 @@ function unlink_key ()
 
     echo keyctl unlink $1 $2 >>$OUTPUTFILE
     keyctl unlink $1 $2 >>$OUTPUTFILE 2>&1
-    e=$?
-    if [ $e = $my_exitval ]
+    if [ $? != $my_exitval ]
     then
-	if [ $e == 0 -a $# = 2 ]
-	then
-	    check_notify unlinked $2 $1
-	fi
-    else
 	failed
     fi
 
@@ -1224,18 +1074,8 @@ function update_key ()
 
     echo keyctl update "$@" >>$OUTPUTFILE
     keyctl update "$@" >>$OUTPUTFILE 2>&1
-    e=$?
-    if [ $e == $my_exitval ]
+    if [ $? != $my_exitval ]
     then
-	if [ $e = 0 ]
-	then
-	    if [ "$1" = "-x" ]
-	    then
-		shift
-	    fi
-	    check_notify updated $1
-	fi
-    else
 	failed
     fi
 }
@@ -1256,14 +1096,8 @@ function pupdate_key ()
 
     echo keyctl pupdate "$@" >>$OUTPUTFILE
     keyctl pupdate "$@" >>$OUTPUTFILE 2>&1
-    e=$?
-    if [ $e == $my_exitval ]
+    if [ $? != $my_exitval ]
     then
-	if [ $e = 0 ]
-	then
-	    check_notify updated $1
-	fi
-    else
 	failed
     fi
 }
@@ -1284,14 +1118,8 @@ function clear_keyring ()
 
     echo keyctl clear $1 >>$OUTPUTFILE
     keyctl clear $1 >>$OUTPUTFILE 2>&1
-    e=$?
-    if [ $e == $my_exitval ]
+    if [ $? != $my_exitval ]
     then
-	if [ $e = 0 ]
-	then
-	    check_notify cleared $1
-	fi
-    else
 	failed
     fi
 }
@@ -1334,14 +1162,8 @@ function link_key ()
 
     echo keyctl link $1 $2 >>$OUTPUTFILE
     keyctl link $1 $2 >>$OUTPUTFILE 2>&1
-    e=$?
-    if [ $e == $my_exitval ]
+    if [ $? != $my_exitval ]
     then
-	if [ $e == 0 ]
-	then
-	    check_notify linked $2 $1
-	fi
-    else
 	failed
     fi
 }
@@ -1364,7 +1186,7 @@ function search_for_key ()
 	    my_keyid=x
 	    ;;
 	*)
-	    echo "BAD search_for_key ARGUMENT" >&2
+	    echo "BAD create_key ARGUMENT" >&2
 	    failed
 	    return
 	    ;;
@@ -1383,10 +1205,7 @@ function search_for_key ()
 	    then
 		if [ $got_keyid = $my_keyid ]
 		then
-		    if [ $e == 0 -a $# == 4 ]
-		    then
-			check_notify linked $4 $got_keyid
-		    fi
+		    :
 		else
 		    echo "KEY MISMATCH $got_keyid != $my_keyid" >&2
 		    failed
@@ -1418,14 +1237,8 @@ function set_key_perm ()
 
     echo keyctl setperm "$@" >>$OUTPUTFILE
     keyctl setperm "$@" >>$OUTPUTFILE 2>&1
-    e=$?
-    if [ $e == $my_exitval ]
+    if [ $? != $my_exitval ]
     then
-	if [ $e = 0 ]
-	then
-	    check_notify setattr $1
-	fi
-    else
 	failed
     fi
 }
@@ -1446,14 +1259,8 @@ function chown_key ()
 
     echo keyctl chown "$@" >>$OUTPUTFILE
     keyctl chown "$@" >>$OUTPUTFILE 2>&1
-    e=$?
-    if [ $e == $my_exitval ]
+    if [ $? != $my_exitval ]
     then
-	if [ $e = 0 ]
-	then
-	    check_notify setattr $1
-	fi
-    else
 	failed
     fi
 }
@@ -1474,14 +1281,8 @@ function chgrp_key ()
 
     echo keyctl chgrp "$@" >>$OUTPUTFILE
     keyctl chgrp "$@" >>$OUTPUTFILE 2>&1
-    e=$?
-    if [ $e == $my_exitval ]
+    if [ $? != $my_exitval ]
     then
-	if [ $e = 0 ]
-	then
-	    check_notify setattr $1
-	fi
-    else
 	failed
     fi
 }
@@ -1637,14 +1438,8 @@ function timeout_key ()
 
     echo keyctl timeout $1 $2 >>$OUTPUTFILE
     keyctl timeout $1 $2 >>$OUTPUTFILE 2>&1
-    e=$?
-    if [ $e == $my_exitval ]
+    if [ $? != $my_exitval ]
     then
-	if [ $e = 0 ]
-	then
-	    check_notify setattr $1
-	fi
-    else
 	failed
     fi
 }
@@ -1665,14 +1460,8 @@ function invalidate_key ()
 
     echo keyctl invalidate $1 >>$OUTPUTFILE
     keyctl invalidate $1 >>$OUTPUTFILE 2>&1
-    e=$?
-    if [ $e == $my_exitval ]
+    if [ $? != $my_exitval ]
     then
-	if [ $e = 0 ]
-	then
-	    check_notify invalidated $1
-	fi
-    else
 	failed
     fi
 }
@@ -1759,16 +1548,8 @@ function move_key ()
 
     echo keyctl move $* >>$OUTPUTFILE
     keyctl move $* >>$OUTPUTFILE 2>&1
-    e=$?
-    if [ $e = $my_exitval ]
+    if [ $? != $my_exitval ]
     then
-	if [ "x$1" = "x-f" ]; then shift; fi
-	if [ $e = 0 -a $2 != $3 ]
-	then
-	    check_notify -2 unlinked $2 $1
-	    check_notify linked $3 $1
-	fi
-    else
 	failed
     fi
 }
@@ -1829,92 +1610,5 @@ function set_gc_delay()
     if [ -f $key_gc_delay_file ]; then
         echo $delay > $key_gc_delay_file
         echo "Set $key_gc_delay_file to $delay, orig: $orig_gc_delay"
-    fi
-}
-
-###############################################################################
-#
-# Note the creation of a new key
-#
-#	expect_new_key <variable_name> <keyring> [<expected_id>]
-#
-###############################################################################
-function xxx_expect_new_key ()
-{
-    my_varname=$1
-    my_keyring=$2
-
-    my_keyid="`tail -1 $OUTPUTFILE`"
-    if expr "$my_keyid" : '[1-9][0-9]*' >&/dev/null
-    then
-	eval $my_varname=$my_keyid
-
-	if [ $# = 3 -a "x$my_keyid" != "x$2" ]
-	then
-	    failed
-	fi
-
-	watch_add_key $my_keyid
-	check_notify linked $my_keyring $my_keyid
-    else
-	eval $my_varname=no
-	result=FAIL
-    fi
-}
-
-###############################################################################
-#
-# Note implicit update of a key
-#
-#	implicit_update <key_id>
-#
-###############################################################################
-function xxx_implicit_update ()
-{
-    my_keyid=$1
-
-    got_keyid="`tail -1 $OUTPUTFILE`"
-    if expr "$got_keyid" : '[1-9][0-9]*' >&/dev/null
-    then
-	if [ "x$got_keyid" == "x$my_keyid" ]
-	then
-	    check_notify updated $my_keyid
-	else
-	    failed
-	fi
-    else
-	result=FAIL
-    fi
-}
-
-###############################################################################
-#
-# Note the explicit update of new key
-#
-###############################################################################
-function xxx_key_updated ()
-{
-    my_keyid=$1
-
-    check_notify updated $my_keyid
-}
-
-###############################################################################
-#
-# extract a key ID from the log file
-#
-###############################################################################
-function xxx_expect_found_key ()
-{
-    my_keyid="`tail -1 $OUTPUTFILE`"
-    if expr "$my_keyid" : '[1-9][0-9]*' >&/dev/null
-    then
-	if [ "x$my_keyid" != "x$1" ]
-	then
-	    failed
-	fi
-    else
-	eval $my_varname=no
-	result=FAIL
     fi
 }
