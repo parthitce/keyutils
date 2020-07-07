@@ -115,13 +115,13 @@ keyctl \- key management facility control
 .br
 \fBkeyctl\fR pkey_decrypt <key> <pass> <datafile> <sigfile> [k=v]*
 .br
-\fBkeyctl\fR watch [\-f<filters>] <key>
+\fBkeyctl\fR watch <key>
 .br
 \fBkeyctl\fR watch_add <fd> <key>
 .br
 \fBkeyctl\fR watch_rm <fd> <key>
 .br
-\fBkeyctl\fR watch_session [\-f <filters>] [-n <name>] \\
+\fBkeyctl\fR watch_session [-n <name>] \\
                 <notifylog> <gclog> <fd> <prog> [<arg1> <arg2> ...]
 .SH DESCRIPTION
 This program is used to control the key management facility in various ways
@@ -954,9 +954,9 @@ keyctl pkey_verify $k 0 foo.hash foo.sig enc=pkcs1 hash=sha256
 See asymmetric-key(7) for more information.
 
 .SS Change notifications
-\fBkeyctl\fR watch [\-f<filters>] <key>
+\fBkeyctl\fR watch <key>
 .br
-\fBkeyctl\fR watch_session [\-f <filters>] [-n <name>] \\
+\fBkeyctl\fR watch_session [-n <name>] \\
                 <notifylog> <gclog> <fd> <prog> [<arg1> <arg2> ...]
 \fBkeyctl\fR watch_add <fd> <key>
 .br
@@ -966,24 +966,7 @@ See asymmetric-key(7) for more information.
 The
 .B watch
 command watches a single key, printing notifications to stdout until the key
-is destroyed.  Filters can be employed to cut down the events that will be
-delivered.  The
-.I filter
-string is a series of letters, each one of which enables a particular event
-subtype:
-.PP
-.RS
-.nf
-.BR i " - The key has been instantiated"
-.BR p " - The key has been updated"
-.BR l " - A link has been added to a keyring"
-.BR n " - A link has been removed from a keyring"
-.BR c " - A keyring has been cleared"
-.BR r " - A key has been revoked"
-.BR v " - A key has been invalidated"
-.BR s " - A key has had its attributes changed"
-.fi
-.RE
+is destroyed.
 .PP
 The output of the command looks like:
 .PP

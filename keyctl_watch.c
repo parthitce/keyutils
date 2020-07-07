@@ -38,16 +38,6 @@ static key_serial_t session;
 static int watch_fd;
 static int debug;
 
-static struct watch_notification_filter filter = {
-	.nr_filters	= 0,
-	.filters = {
-		/* Reserve a slot */
-		[0]	= {
-			.type			= WATCH_TYPE_KEY_NOTIFY,
-		},
-	},
-};
-
 static inline bool after_eq(unsigned int a, unsigned int b)
 {
         return (signed int)(a - b) >= 0;
@@ -182,6 +172,17 @@ int consumer(FILE *log, FILE *gc, int fd, struct watch_queue_buffer *buf)
 	exit(0);
 }
 
+static struct watch_notification_filter filter = {
+	.nr_filters	= 1,
+	.__reserved	= 0,
+	.filters = {
+		[0]	= {
+			.type			= WATCH_TYPE_KEY_NOTIFY,
+			.subtype_filter[0]	= UINT_MAX,
+		},
+	},
+};
+
 /*
  * Open the watch device and allocate a buffer.
  */
@@ -198,8 +199,7 @@ static int open_watch(struct watch_queue_buffer **_buf)
 	if (ioctl(fd, IOC_WATCH_QUEUE_SET_SIZE, BUF_SIZE) == -1)
 		error("/dev/watch_queue(size)");
 
-	if (filter.nr_filters &&
-	    ioctl(fd, IOC_WATCH_QUEUE_SET_FILTER, &filter) == -1)
+	if (ioctl(fd, IOC_WATCH_QUEUE_SET_FILTER, &filter) == -1)
 		error("/dev/watch_queue(filter)");
 
 	page_size = sysconf(_SC_PAGESIZE);
@@ -213,84 +213,18 @@ static int open_watch(struct watch_queue_buffer **_buf)
 }
 
 /*
- * Parse a filter character representation into a subtype number.
- */
-static bool parse_subtype(struct watch_notification_type_filter *t, char filter)
-{
-	static const char filter_mapping[] =
-		"i" /* 0 NOTIFY_KEY_INSTANTIATED */
-		"p" /* 1 NOTIFY_KEY_UPDATED */
-		"l" /* 2 NOTIFY_KEY_LINKED */
-		"n" /* 3 NOTIFY_KEY_UNLINKED */
-		"c" /* 4 NOTIFY_KEY_CLEARED */
-		"r" /* 5 NOTIFY_KEY_REVOKED */
-		"v" /* 6 NOTIFY_KEY_INVALIDATED */
-		"s" /* 7 NOTIFY_KEY_SETATTR */
-		;
-	const char *p;
-	unsigned int st_bits;
-	unsigned int st_index;
-	unsigned int st_bit;
-	int subtype;
-
-	p = strchr(filter_mapping, filter);
-	if (!p)
-		return false;
-
-	subtype = p - filter_mapping;
-	st_bits = sizeof(t->subtype_filter[0]) * 8;
-	st_index = subtype / st_bits;
-	st_bit = 1U << (subtype % st_bits);
-	t->subtype_filter[st_index] |= st_bit;
-	return true;
-}
-
-/*
- * Parse filters.
- */
-static void parse_watch_filter(char *str)
-{
-	struct watch_notification_filter *f = &filter;
-	struct watch_notification_type_filter *t0 = &f->filters[0];
-
-	f->nr_filters	= 1;
-	t0->type	= WATCH_TYPE_KEY_NOTIFY;
-
-	for (; *str; str++) {
-		if (parse_subtype(t0, *str))
-			continue;
-		fprintf(stderr, "Unknown filter character '%c'\n", *str);
-		exit(2);
-	}
-}
-
-/*
  * Watch a key or keyring for changes.
  */
 void act_keyctl_watch(int argc, char *argv[])
 {
 	struct watch_queue_buffer *buf;
 	key_serial_t key;
-	int wfd, opt;
+	int wfd;
 
-	while (opt = getopt(argc, argv, "f:"),
-	       opt != -1) {
-		switch (opt) {
-		case 'f':
-			parse_watch_filter(optarg);
-			break;
-		default:
-			fprintf(stderr, "Unknown option\n");
-			exit(2);
-		}
-	}
-
-	argv += optind;
-	argc -= optind;
-	if (argc != 1)
+	if (argc != 2)
 		format();
 
-	key = get_key_id(argv[0]);
+	key = get_key_id(argv[1]);
 	wfd = open_watch(&buf);
 
 	if (keyctl_watch_key(key, wfd, 0x01) == -1)
@@ -422,14 +356,11 @@ void act_keyctl_watch_session(int argc, char *argv[])
 	FILE *log, *gc;
 	int wfd, tfd, opt, w, e = 0, e2 = 0;
 
-	while (opt = getopt(argc, argv, "+df:n:"),
+	while (opt = getopt(argc, argv, "+dn:"),
 	       opt != -1) {
 		switch (opt) {
 		case 'd':
 			debug = 1;
-			break;
-		case 'f':
-			parse_watch_filter(optarg);
 			break;
 		case 'n':
 			session_name = optarg;
